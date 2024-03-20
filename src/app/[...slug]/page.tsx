@@ -52,8 +52,8 @@ export default async function WikiPage({
     'utf-8',
   ).then((res) => res.toString());
 
-  const createdAt = dayjs(article.createdAt).format('YYYY-MM-DD HH:mm:ss');
-  const updatedAt = dayjs(article.updatedAt).format('YYYY-MM-DD HH:mm:ss');
+  const createdAt = dayjs(article.createdAt);
+  const updatedAt = dayjs(article.updatedAt);
 
   return (
     <>
@@ -66,8 +66,12 @@ export default async function WikiPage({
         )}
       </div>
       <div className="text-gray-500 text-right">
-        <p>입력 : {createdAt}</p>
-        <p>수정 : {updatedAt}</p>
+        {createdAt.isValid() && (
+          <p>입력 : {createdAt.format('YYYY-MM-DD HH:mm:ss')}</p>
+        )}
+        {updatedAt.isValid() && (
+          <p>수정 : {updatedAt.format('YYYY-MM-DD HH:mm:ss')}</p>
+        )}
         {otherLanguages.length > 0 && (
           <div className="flex justify-end gap-1">
             <span>다른 언어 : </span>
@@ -103,7 +107,7 @@ export default async function WikiPage({
           options={{
             parseFrontmatter: true,
             mdxOptions: {
-              rehypePlugins: [[rehypeMathjax, { svg: { scale: 0.85 } }]],
+              rehypePlugins: [[rehypeMathjax, { svg: { scale: 1 } }]],
               remarkPlugins: [remarkMath],
             },
           }}
