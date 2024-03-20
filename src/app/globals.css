@@ -70,7 +70,7 @@ mjx-container {
   counter-increment: h2counter;
 }
 
-.content h2.nocount:before {
+.content h2.nocount:before, .content .footnotes h2:before {
   content: none;
   counter-increment: none;
 }
@@ -188,8 +188,24 @@ mjx-container {
   padding: 0.5rem;
 }
 
+.content ul {
+  list-style-type: disc;
+
+  padding-inline-start: 1.5rem;
+}
+
+.content ul ul {
+  list-style-type: circle;
+}
+
+.content ul ul ul {
+  list-style-type: square;
+}
+
 .content ol {
   list-style-type: decimal;
+
+  padding-inline-start: 1.5rem;
 }
 
 .content ol ol {

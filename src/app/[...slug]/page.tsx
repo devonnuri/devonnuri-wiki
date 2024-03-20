@@ -3,6 +3,7 @@ import { readFile } from 'fs/promises';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { redirect } from 'next/navigation';
 import rehypeMathjax from 'rehype-mathjax/svg';
+import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
 import customMDXComponents from '@/components/custom-mdx-components';
@@ -78,7 +79,9 @@ export default async function WikiPage({
             <ul className="flex gap-1">
               {otherLanguages.map((lang) => (
                 <li key={lang}>
-                  <a href={`/${lang}/${entryId}`}>{lang}</a>
+                  <a href={`/${lang}/${entryId}`} className="underline">
+                    {lang}
+                  </a>
                 </li>
               ))}
             </ul>
@@ -108,7 +111,7 @@ export default async function WikiPage({
             parseFrontmatter: true,
             mdxOptions: {
               rehypePlugins: [[rehypeMathjax, { svg: { scale: 1 } }]],
-              remarkPlugins: [remarkMath],
+              remarkPlugins: [remarkMath, remarkGfm],
             },
           }}
           components={customMDXComponents}
