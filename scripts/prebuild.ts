@@ -19,9 +19,9 @@ const execAsync = (command: string) =>
   });
 
 async function main() {
-  await rimraf('./public/mdx/');
+  await rimraf('./mdx/');
 
-  await mkdir('./public/mdx/', { recursive: true });
+  await mkdir('./mdx/', { recursive: true });
 
   // Fetch all mdx files from /data/wiki
   const folders = await glob('./data/wiki/**/');
@@ -88,8 +88,7 @@ async function main() {
         throw new Error(`Duplicate entry id: ${entryId}`);
       }
 
-      // copy mdx file to public/mdx
-      await copyFile(mdxFile, `./public/mdx/${entryId}.${language}.mdx`);
+      await copyFile(mdxFile, `./mdx/${entryId}.${language}.mdx`);
     }
 
     entries = { ...entries, ...folderEntries };
@@ -97,11 +96,7 @@ async function main() {
 
   console.log(JSON.stringify(entries, null, 2));
 
-  await writeFile(
-    './public/mdx/entries.json',
-    JSON.stringify(entries),
-    'utf-8',
-  );
+  await writeFile('./mdx/entries.json', JSON.stringify(entries), 'utf-8');
 }
 
 main().catch(console.error);
