@@ -1,7 +1,10 @@
 import { readFile } from 'fs/promises';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { redirect } from 'next/navigation';
+import rehypeMathjax from 'rehype-mathjax';
+import remarkMath from 'remark-math';
 
+import customMDXComponents from '@/components/custom-mdx-components';
 import { Entry } from '@/types/article';
 
 export default async function WikiPage({
@@ -38,5 +41,17 @@ export default async function WikiPage({
     'utf-8',
   ).then((res) => res.toString());
 
-  return <MDXRemote source={markdown} options={{ parseFrontmatter: true }} />;
+  return (
+    <MDXRemote
+      source={markdown}
+      options={{
+        parseFrontmatter: true,
+        mdxOptions: {
+          rehypePlugins: [rehypeMathjax],
+          remarkPlugins: [remarkMath],
+        },
+      }}
+      components={customMDXComponents}
+    />
+  );
 }
