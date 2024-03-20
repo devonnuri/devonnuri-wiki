@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
+import Link from 'next/link';
 
 import './globals.css';
 
@@ -18,12 +19,14 @@ export default function RootLayout({
       <body className="md:px-3">
         <div className="w-[48rem] mx-auto my-0 px-8 py-0 border border-black min-h-screen">
           <div className="flex items-center justify-center my-10">
-            <Image
-              src="/devonnuri-wiki.svg"
-              alt="devonnuri.wiki"
-              width="284"
-              height="75"
-            />
+            <Link href="./main_page">
+              <Image
+                src="/devonnuri-wiki.svg"
+                alt="devonnuri.wiki"
+                width="284"
+                height="75"
+              />
+            </Link>
           </div>
           <div>
             <input

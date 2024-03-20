@@ -12,7 +12,11 @@ export default async function WikiPage({
 }: {
   params: { slug: string[] };
 }) {
-  const [language, entryId, ...rest] = params.slug;
+  const [language, entryId] = params.slug;
+
+  if (!entryId) {
+    redirect(`/ko/main_page`);
+  }
 
   const entries: Record<string, Entry> = await readFile(
     `mdx/entries.json`,
@@ -31,7 +35,7 @@ export default async function WikiPage({
 
   if (!article) {
     if (defaultLanguage !== language) {
-      redirect(`/wiki/${[entry.defaultLanguage, entryId, ...rest].join('/')}`);
+      redirect(`/wiki/${entry.defaultLanguage}/${entryId}`);
     } else {
       // Should be unreachable
       return <div>Article not found</div>;
@@ -66,7 +70,7 @@ export default async function WikiPage({
             <ul className="flex gap-1">
               {otherLanguages.map((lang) => (
                 <li key={lang}>
-                  <a href={`/${[lang, entryId, ...rest].join('/')}`}>{lang}</a>
+                  <a href={`/${lang}/${entryId}`}>{lang}</a>
                 </li>
               ))}
             </ul>
