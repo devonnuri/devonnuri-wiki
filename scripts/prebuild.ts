@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { mkdir } from 'fs/promises';
+import { mkdir, writeFile } from 'fs/promises';
 import { glob } from 'glob';
 import * as matter from 'gray-matter';
 import * as path from 'path';
@@ -41,14 +41,14 @@ async function main() {
 
   // Fetch all mdx files from /data/wiki
   const folders = await glob('./data/wiki/**/');
-  let entries: Entry[] = [];
+  let entries: Record<string, Entry> = {};
 
   for (const folder of folders) {
     const parents = folder.split('/').slice(2);
 
     const mdxFiles = await glob(`${folder}/*.mdx`);
 
-    let folderEntries: Entry[] = [];
+    let folderEntries: Record<string, Entry> = {};
 
     for (const mdxFile of mdxFiles) {
       let id = path.basename(mdxFile, '.mdx').split('.').slice(0, -1).join('.');
@@ -79,34 +79,40 @@ async function main() {
         updatedAt: updatedAt.trim() || createdAt.trim() || null,
       };
 
-      const existingEntry = folderEntries.find((entry) => entry.id === id);
+      const existingEntry = folderEntries[id];
       if (existingEntry) {
         existingEntry.articles[language] = article;
       } else {
-        folderEntries.push({
+        folderEntries[id] = {
           id,
           parents: isIndex ? parents.slice(0, -1) : parents,
           articles: {
             [language]: article,
           },
-        });
+        };
       }
     }
 
-    const duplicateEntry = folderEntries.find((entry) =>
-      entries.some((e) => e.id === entry.id),
+    const duplicateEntry = Object.keys(folderEntries).find((id) =>
+      Object.keys(entries).includes(id),
     );
 
     if (duplicateEntry) {
       throw new Error(
-        `Duplicate entry found: ${duplicateEntry.id} in ${folder}`,
+        `Duplicate entry id found in ${folder}: ${duplicateEntry}`,
       );
     }
 
-    entries = entries.concat(folderEntries);
+    entries = { ...entries, ...folderEntries };
   }
 
   console.log(JSON.stringify(entries, null, 2));
+
+  await writeFile(
+    './public/mdx/entries.json',
+    JSON.stringify(entries),
+    'utf-8',
+  );
 }
 
 main().catch(console.error);

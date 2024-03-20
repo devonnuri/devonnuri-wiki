@@ -41,3 +41,5 @@ next-env.d.ts
 data/assets/**/*
 
 .idea/
+
+public/mdx/
