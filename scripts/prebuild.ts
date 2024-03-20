@@ -1,27 +1,11 @@
 import { exec } from 'child_process';
-import { mkdir, writeFile } from 'fs/promises';
+import { copyFile, mkdir, writeFile } from 'fs/promises';
 import { glob } from 'glob';
 import * as matter from 'gray-matter';
 import * as path from 'path';
 import { rimraf } from 'rimraf';
 
-const LANGUAGES = ['en', 'ko'] as const;
-type Language = (typeof LANGUAGES)[number];
-
-interface Article {
-  title: string;
-  language: Language;
-  createdAt: string | null; // ISO 8601
-  updatedAt: string | null; // ISO 8601
-}
-
-interface Entry {
-  id: string;
-  parents: string[];
-  articles: {
-    [x: string]: Article;
-  };
-}
+import { Article, Entry, Frontmatter, Language } from '@/types/article';
 
 const execAsync = (command: string) =>
   new Promise<string>((resolve, reject) => {
@@ -51,18 +35,21 @@ async function main() {
     let folderEntries: Record<string, Entry> = {};
 
     for (const mdxFile of mdxFiles) {
-      let id = path.basename(mdxFile, '.mdx').split('.').slice(0, -1).join('.');
+      let entryId = path
+        .basename(mdxFile, '.mdx')
+        .split('.')
+        .slice(0, -1)
+        .join('.');
 
       const nearestParent = parents.at(-1);
-      const isIndex = id === 'index' && nearestParent !== undefined;
+      const isIndex = entryId === 'index' && nearestParent !== undefined;
       if (isIndex) {
-        id = nearestParent;
+        entryId = nearestParent;
       }
 
       const language = mdxFile.split('.').at(-2) as Language;
 
-      const content = matter.read(mdxFile);
-      const title = content.data.title as string;
+      const frontmatter = matter.read(mdxFile).data as Frontmatter;
 
       const createdAt = await execAsync(
         `git log --diff-filter=A --format=%cI -- ${mdxFile}`,
@@ -73,34 +60,36 @@ async function main() {
       );
 
       const article: Article = {
-        title,
+        title: frontmatter.title,
         language,
+        default: frontmatter.default,
         createdAt: createdAt.trim() || null,
         updatedAt: updatedAt.trim() || createdAt.trim() || null,
       };
 
-      const existingEntry = folderEntries[id];
+      const existingEntry = folderEntries[entryId];
       if (existingEntry) {
         existingEntry.articles[language] = article;
+        if (article.default) {
+          existingEntry.defaultLanguage = language;
+        }
       } else {
-        folderEntries[id] = {
-          id,
+        folderEntries[entryId] = {
+          id: entryId,
           parents: isIndex ? parents.slice(0, -1) : parents,
+          defaultLanguage: language,
           articles: {
             [language]: article,
           },
         };
       }
-    }
 
-    const duplicateEntry = Object.keys(folderEntries).find((id) =>
-      Object.keys(entries).includes(id),
-    );
+      if (entries[entryId]) {
+        throw new Error(`Duplicate entry id: ${entryId}`);
+      }
 
-    if (duplicateEntry) {
-      throw new Error(
-        `Duplicate entry id found in ${folder}: ${duplicateEntry}`,
-      );
+      // copy mdx file to public/mdx
+      await copyFile(mdxFile, `./public/mdx/${entryId}.${language}.mdx`);
     }
 
     entries = { ...entries, ...folderEntries };
