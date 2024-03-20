@@ -3,6 +3,7 @@ export type Language = (typeof LANGUAGES)[number];
 
 export interface Frontmatter {
   title: string;
+  subtitle?: string;
   default: boolean;
 }
 
@@ -17,8 +18,10 @@ export interface Entry {
 
 export interface Article {
   title: string;
+  subtitle?: string;
   language: Language;
   default: boolean;
   createdAt: string | null; // ISO 8601
   updatedAt: string | null; // ISO 8601
+  originalPath: string;
 }

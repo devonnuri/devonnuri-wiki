@@ -61,10 +61,12 @@ async function main() {
 
       const article: Article = {
         title: frontmatter.title,
+        subtitle: frontmatter.subtitle,
         language,
         default: frontmatter.default,
         createdAt: createdAt.trim() || null,
         updatedAt: updatedAt.trim() || createdAt.trim() || null,
+        originalPath: mdxFile,
       };
 
       const existingEntry = folderEntries[entryId];

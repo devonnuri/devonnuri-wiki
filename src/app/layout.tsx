@@ -1,9 +1,7 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import Image from 'next/image';
 
 import './globals.css';
-
-const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'devonnuri.wiki',
@@ -16,8 +14,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html>
+      <body className="md:px-3">
+        <div className="w-[48rem] mx-auto my-0 px-8 py-0 border border-black min-h-screen">
+          <div className="flex items-center justify-center my-10">
+            <Image
+              src="/devonnuri-wiki.svg"
+              alt="devonnuri.wiki"
+              width="284"
+              height="75"
+            />
+          </div>
+          <div>
+            <input
+              className="w-full text-[1.375em] italic border rounded mx-0 my-2 px-2 py-[0.2rem] border-black"
+              type="text"
+              placeholder="Where do you want to wander?"
+            />
+            {children}
+          </div>
+        </div>
+      </body>
     </html>
   );
 }
