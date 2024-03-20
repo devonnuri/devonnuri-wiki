@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { readFile } from 'fs/promises';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { redirect } from 'next/navigation';
@@ -51,6 +52,9 @@ export default async function WikiPage({
     'utf-8',
   ).then((res) => res.toString());
 
+  const createdAt = dayjs(article.createdAt).format('YYYY-MM-DD HH:mm:ss');
+  const updatedAt = dayjs(article.updatedAt).format('YYYY-MM-DD HH:mm:ss');
+
   return (
     <>
       <div>
@@ -62,8 +66,8 @@ export default async function WikiPage({
         )}
       </div>
       <div className="text-gray-500 text-right">
-        <p>입력 : {article.createdAt}</p>
-        <p>수정 : {article.updatedAt}</p>
+        <p>입력 : {createdAt}</p>
+        <p>수정 : {updatedAt}</p>
         {otherLanguages.length > 0 && (
           <div className="flex justify-end gap-1">
             <span>다른 언어 : </span>
