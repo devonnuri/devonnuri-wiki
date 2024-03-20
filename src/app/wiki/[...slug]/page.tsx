@@ -1,8 +1,6 @@
 import { readFile } from 'fs/promises';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { redirect } from 'next/navigation';
-import { useRouter } from 'next/router';
-import { useEffect } from 'react';
 
 import { Entry } from '@/types/article';
 
@@ -40,5 +38,5 @@ export default async function WikiPage({
     'utf-8',
   ).then((res) => res.toString());
 
-  return <MDXRemote source={markdown} />;
+  return <MDXRemote source={markdown} options={{ parseFrontmatter: true }} />;
 }
