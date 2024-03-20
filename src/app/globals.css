@@ -21,3 +21,174 @@ body {
     text-wrap: balance;
   }
 }
+
+/* FIXME: */
+mjx-container {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.content {
+  counter-reset: h1counter;
+  text-align: justify;
+  hyphens: auto;
+
+  padding: 1rem;
+
+  line-height: 1.5;
+  letter-spacing: -0.03em;
+}
+
+.content h1 {
+  counter-reset: h2counter;
+
+  font-size: 1.7em;
+  font-weight: bold;
+  margin: 0.7rem 0;
+}
+
+.content h1:before {
+  content: counter(h1counter) ". ";
+  counter-increment: h1counter;
+}
+
+.content h1.nocount:before {
+  content: none;
+  counter-increment: none;
+}
+
+.content h2 {
+  counter-reset: h3counter;
+
+  font-size: 1.4em;
+  font-weight: bold;
+  margin: 0.7rem 0;
+}
+
+.content h2:before {
+  content: counter(h1counter) "." counter(h2counter) ". ";
+  counter-increment: h2counter;
+}
+
+.content h2.nocount:before {
+  content: none;
+  counter-increment: none;
+}
+
+.content .footnotes {
+  border-top: 1px solid black;
+}
+
+.content p {
+  margin: 0.8rem 0;
+  text-indent: 1em;
+}
+
+.content blockquote {
+  margin-left: 1rem;
+  padding: 0 0 0 1em;
+  border-left: 0.2rem solid dimgray;
+}
+
+.content blockquote p,
+.content .footnotes p,
+.content ul p,
+.content ol p {
+  text-indent: 0;
+  margin: 0;
+}
+
+.content a {
+  color: #3366cc;
+  text-decoration: none;
+}
+
+.content a:hover {
+  text-decoration: underline;
+}
+
+.content a:visited {
+  color: #795cb2;
+}
+
+.content .details {
+  text-align: right;
+  color: dimgray;
+}
+
+.content .details p {
+  margin: 0.3rem 0;
+}
+
+.content .details a {
+  color: dimgray;
+  text-decoration: underline;
+}
+
+.content .details a:visited {
+  color: dimgray;
+}
+
+.content .theorem .theorem-header {
+  border: 1.5px solid #0092C8;
+  border-left-width: 0;
+
+  display: inline-block;
+  position: relative;
+  top: 1rem;
+  left: 1rem;
+}
+
+.content .theorem .theorem-header .theorem-title {
+  display: inline-block;
+
+  background-color: #0092C8;
+  color: white;
+  padding: 0.05rem 0.5rem;
+  font-size: 1em;
+  font-weight: bold;
+  margin: 0;
+}
+
+.content .theorem .theorem-header .theorem-subtitle {
+  display: inline-block;
+
+  background-color: white;
+  color: black;
+  padding: 0.05rem 0.4rem;
+  font-size: 1em;
+  margin: 0;
+}
+
+.content .theorem .theorem-body {
+  border: 1px solid #0092C8;
+  padding: 1rem 0.5rem 0.5rem 0.5rem;
+}
+
+.content table {
+  width: 100%;
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+
+.content th, .content td {
+  border: 1px solid black;
+  padding: 0.5rem;
+}
+
+.content ol {
+  list-style-type: decimal;
+}
+
+.content ol ol {
+  list-style-type: lower-alpha;
+}
+
+.content ol ol ol {
+  list-style-type: lower-roman;
+}
+
+.content pre > code {
+  font-family: 'Jetbrains Mono', monospace;
+  font-size: 0.9em;
+}

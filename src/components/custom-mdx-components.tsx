@@ -1,10 +1,18 @@
 import { ComponentType } from 'react';
 
-const Theorem = ({ children }: { children: React.ReactNode }) => {
+interface TheoremProps {
+  children: React.ReactNode;
+  title?: string;
+  subtitle?: string;
+}
+const Theorem = ({ children, title, subtitle }: TheoremProps) => {
   return (
-    <div>
-      <p>Theorem</p>
-      {children}
+    <div className="theorem">
+      <div className="theorem-header">
+        <span className="theorem-title">{title || 'Theorem'}</span>
+        {subtitle && <span className="theorem-subtitle">{subtitle}</span>}
+      </div>
+      <div className="theorem-body">{children}</div>
     </div>
   );
 };

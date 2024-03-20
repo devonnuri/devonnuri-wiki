@@ -1,7 +1,7 @@
 import { readFile } from 'fs/promises';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { redirect } from 'next/navigation';
-import rehypeMathjax from 'rehype-mathjax';
+import rehypeMathjax from 'rehype-mathjax/svg';
 import remarkMath from 'remark-math';
 
 import customMDXComponents from '@/components/custom-mdx-components';
@@ -42,16 +42,18 @@ export default async function WikiPage({
   ).then((res) => res.toString());
 
   return (
-    <MDXRemote
-      source={markdown}
-      options={{
-        parseFrontmatter: true,
-        mdxOptions: {
-          rehypePlugins: [rehypeMathjax],
-          remarkPlugins: [remarkMath],
-        },
-      }}
-      components={customMDXComponents}
-    />
+    <div className="content">
+      <MDXRemote
+        source={markdown}
+        options={{
+          parseFrontmatter: true,
+          mdxOptions: {
+            rehypePlugins: [[rehypeMathjax, { svg: { scale: 0.85 } }]],
+            remarkPlugins: [remarkMath],
+          },
+        }}
+        components={customMDXComponents}
+      />
+    </div>
   );
 }
