@@ -79,7 +79,10 @@ export default async function WikiPage({
             <ul className="flex gap-1">
               {otherLanguages.map((lang) => (
                 <li key={lang}>
-                  <a href={`/${lang}/${entryId}`} className="underline">
+                  <a
+                    href={`/${lang}/${entryId}`}
+                    className="no-underline hover:underline"
+                  >
                     {lang}
                   </a>
                 </li>
@@ -91,14 +94,14 @@ export default async function WikiPage({
           <a
             href={`https://github.com/devonnuri/devonnuri-wiki/edit/main/${article.originalPath}`}
             target="_blank"
-            className="underline"
+            className="no-underline hover:underline"
           >
             수정
           </a>
           <a
             href={`https://github.com/devonnuri/devonnuri-wiki/commits/main/${article.originalPath}`}
             target="_blank"
-            className="underline"
+            className="no-underline hover:underline"
           >
             역사
           </a>
@@ -119,6 +122,9 @@ export default async function WikiPage({
                 ],
               ],
               remarkPlugins: [remarkMath, remarkGfm],
+              remarkRehypeOptions: {
+                footnoteLabel: '주',
+              },
             },
           }}
           components={customMDXComponents}
