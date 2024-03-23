@@ -24,10 +24,16 @@ body {
   }
 }
 
-/* FIXME: */
+
 mjx-container {
   display: inline-block;
   vertical-align: middle;
+}
+
+/* FIXME: */
+mjx-container[display="true"] {
+  display: flex !important;
+  justify-content: center;
 }
 
 .content {
@@ -92,13 +98,13 @@ mjx-container {
 }
 
 .content p {
-  margin: 0.8rem 0;
+  margin: 1rem 0;
   text-indent: 1em;
 }
 
 .content blockquote {
-  margin-left: 1rem;
-  padding: 0 0 0 1em;
+  margin: 0.5rem 0 0.5rem 0.5rem;
+  padding: 0 0 0 0.7em;
   border-left: 0.2rem solid dimgray;
 }
 

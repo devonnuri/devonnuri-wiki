@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import { copyFile, mkdir, writeFile } from 'fs/promises';
+import { copyFile, cp, mkdir, writeFile } from 'fs/promises';
 import { glob } from 'glob';
 import * as matter from 'gray-matter';
 import * as path from 'path';
@@ -99,6 +99,11 @@ async function main() {
   console.log(JSON.stringify(entries, null, 2));
 
   await writeFile('./mdx/entries.json', JSON.stringify(entries), 'utf-8');
+
+  await rimraf('./public/assets/');
+
+  // Copy assets
+  await cp('./data/assets/', './public/assets/', { recursive: true });
 }
 
 main().catch(console.error);

@@ -43,3 +43,5 @@ data/assets/**/*
 .idea/
 
 /mdx
+
+/public/assets

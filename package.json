@@ -19,7 +19,7 @@
     "react-dom": "^18",
     "rehype-mathjax": "^6.0.0",
     "remark-gfm": "^4.0.0",
-    "remark-math": "^6.0.0"
+    "remark-math": "^5.1.1"
   },
   "devDependencies": {
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",

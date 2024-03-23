@@ -74,7 +74,7 @@ export default function RootLayout({
       <body
         className={`md:px-3 ${texGyreTermes.variable} ${koPubBatang.variable}`}
       >
-        <div className="w-[48rem] mx-auto my-0 px-8 py-0 border border-black min-h-screen">
+        <div className="w-[48rem] mx-auto my-0 px-8 pb-8 border border-black min-h-screen">
           <div className="flex items-center justify-center my-10">
             <Link href="./main_page">
               <Image

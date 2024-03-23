@@ -110,7 +110,14 @@ export default async function WikiPage({
           options={{
             parseFrontmatter: true,
             mdxOptions: {
-              rehypePlugins: [[rehypeMathjax, { svg: { scale: 1 } }]],
+              rehypePlugins: [
+                [
+                  rehypeMathjax,
+                  {
+                    svg: { scale: 1 },
+                  },
+                ],
+              ],
               remarkPlugins: [remarkMath, remarkGfm],
             },
           }}
