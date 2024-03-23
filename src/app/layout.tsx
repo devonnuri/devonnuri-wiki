@@ -1,9 +1,13 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
+import { cookies } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 
 import './globals.css';
+import { useTranslation } from './i18n';
+import { FALLBACK_LANGUAGE, LANGUAGES, Language } from './i18n/consts';
 
 export const metadata: Metadata = {
   title: 'devonnuri.wiki',
@@ -64,11 +68,20 @@ export const koPubBatang = localFont({
   display: 'swap',
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = cookies();
+  const lang = cookieStore.get('lang')?.value;
+
+  if (!lang) {
+    redirect(`/${FALLBACK_LANGUAGE}/main_page`);
+  }
+
+  const { t } = await useTranslation(lang as Language);
+
   return (
     <html>
       <body
@@ -89,7 +102,7 @@ export default function RootLayout({
             <input
               className="w-full text-[1.375em] italic border rounded mx-0 my-2 px-2 py-[0.2rem] border-black"
               type="text"
-              placeholder="Where do you want to wander?"
+              placeholder={t('search')}
             />
             {children}
           </div>

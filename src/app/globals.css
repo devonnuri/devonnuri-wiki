@@ -94,7 +94,8 @@ mjx-container[display="true"] {
 }
 
 .content .footnotes {
-  border-top: 1px solid black;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 1rem;
 }
 
 .content p {

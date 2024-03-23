@@ -9,6 +9,9 @@ import remarkMath from 'remark-math';
 import customMDXComponents from '@/components/custom-mdx-components';
 import { Entry } from '@/types/article';
 
+import { useTranslation } from '../i18n';
+import { LANGUAGES, Language } from '../i18n/consts';
+
 export default async function WikiPage({
   params,
 }: {
@@ -17,8 +20,10 @@ export default async function WikiPage({
   const [language, entryId] = params.slug;
 
   if (!entryId) {
-    redirect(`/ko/main_page`);
+    redirect(`/${language}/main_page`);
   }
+
+  const { t } = await useTranslation(language as Language);
 
   const entries: Record<string, Entry> = await readFile(
     `mdx/entries.json`,
@@ -68,14 +73,18 @@ export default async function WikiPage({
       </div>
       <div className="text-gray-500 text-right">
         {createdAt.isValid() && (
-          <p>입력 : {createdAt.format('YYYY-MM-DD HH:mm:ss')}</p>
+          <p>
+            {t('created_at')} {createdAt.format('YYYY-MM-DD HH:mm:ss')}
+          </p>
         )}
         {updatedAt.isValid() && (
-          <p>수정 : {updatedAt.format('YYYY-MM-DD HH:mm:ss')}</p>
+          <p>
+            {t('updated_at')} {updatedAt.format('YYYY-MM-DD HH:mm:ss')}
+          </p>
         )}
         {otherLanguages.length > 0 && (
           <div className="flex justify-end gap-1">
-            <span>다른 언어 : </span>
+            <span>{t('other_languages')} : </span>
             <ul className="flex gap-1">
               {otherLanguages.map((lang) => (
                 <li key={lang}>
@@ -96,14 +105,14 @@ export default async function WikiPage({
             target="_blank"
             className="no-underline hover:underline"
           >
-            수정
+            {t('edit')}
           </a>
           <a
             href={`https://github.com/devonnuri/devonnuri-wiki/commits/main/${article.originalPath}`}
             target="_blank"
             className="no-underline hover:underline"
           >
-            역사
+            {t('history')}
           </a>
         </div>
       </div>
@@ -123,7 +132,7 @@ export default async function WikiPage({
               ],
               remarkPlugins: [remarkMath, remarkGfm],
               remarkRehypeOptions: {
-                footnoteLabel: '주',
+                footnoteLabel: t('footnotes'),
               },
             },
           }}

@@ -15,4 +15,3 @@ The features that are (going to be) implemented are as follows:
 - [ ] table of contents
 - [ ] search feature
 - [ ] links that point to non-existing document should be in red
-- [ ] partial rendering for test

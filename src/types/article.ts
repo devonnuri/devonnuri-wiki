@@ -1,5 +1,4 @@
-export const LANGUAGES = ['en', 'ko'] as const;
-export type Language = (typeof LANGUAGES)[number];
+import { Language } from '@/app/i18n/consts';
 
 export interface Frontmatter {
   title: string;
