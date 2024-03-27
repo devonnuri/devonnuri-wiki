@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 
 import { FALLBACK_LANGUAGE, LANGUAGES, LANG_COOKIE_NAME } from './i18n/consts';
 
-// @ts-ignore
+// @ts-expect-error - no types available
 acceptLanguage.languages(LANGUAGES as string[]);
 
 export default async function Home() {

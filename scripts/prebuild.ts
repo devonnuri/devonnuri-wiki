@@ -5,7 +5,8 @@ import * as matter from 'gray-matter';
 import * as path from 'path';
 import { rimraf } from 'rimraf';
 
-import { Article, Entry, Frontmatter, Language } from '@/types/article';
+import { Language } from '@/app/i18n/consts';
+import { Article, Entry, Frontmatter } from '@/types/article';
 
 const execAsync = (command: string) =>
   new Promise<string>((resolve, reject) => {

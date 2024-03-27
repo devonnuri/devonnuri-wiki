@@ -10,7 +10,7 @@ import customMDXComponents from '@/components/custom-mdx-components';
 import { Entry } from '@/types/article';
 
 import { useTranslation } from '../i18n';
-import { LANGUAGES, Language } from '../i18n/consts';
+import { Language } from '../i18n/consts';
 
 export default async function WikiPage({
   params,

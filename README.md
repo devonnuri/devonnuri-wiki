@@ -5,9 +5,9 @@
 The features that are (going to be) implemented are as follows:
 
 - [x] theorem box
-- [ ] multi-language support
+- [x] multi-language support
   - [x] multi-language article
-  - [ ] UI i18n
+  - [x] UI i18n
 - [x] internal link support (including auto language fallback)
 - [ ] add icon in sidebar
 - [ ] more elaborate (un)ordered list (_just like the latex's one_)

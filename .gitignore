@@ -38,7 +38,7 @@ next-env.d.ts
 .env
 
 # data/wiki/**/*
-data/assets/**/*
+# data/assets/**/*
 
 .idea/
 
