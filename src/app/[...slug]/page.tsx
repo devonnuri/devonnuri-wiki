@@ -26,7 +26,7 @@ export default async function WikiPage({
   const { t } = await useTranslation(language as Language);
 
   const entries: Record<string, Entry> = await readFile(
-    `mdx/entries.json`,
+    `${process.cwd()}/mdx/entries.json`,
     'utf-8',
   ).then((res) => JSON.parse(res.toString()));
 
@@ -54,7 +54,7 @@ export default async function WikiPage({
   );
 
   const markdown = await readFile(
-    `mdx/${entryId}.${language}.mdx`,
+    `${process.cwd()}/mdx/${entryId}.${language}.mdx`,
     'utf-8',
   ).then((res) => res.toString());
 
