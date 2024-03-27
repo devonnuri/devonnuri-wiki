@@ -33,7 +33,7 @@ async function main() {
 
     const mdxFiles = await glob(`${folder}/*.mdx`);
 
-    let folderEntries: Record<string, Entry> = {};
+    const folderEntries: Record<string, Entry> = {};
 
     for (const mdxFile of mdxFiles) {
       let entryId = path
@@ -91,7 +91,10 @@ async function main() {
         throw new Error(`Duplicate entry id: ${entryId}`);
       }
 
-      await copyFile(mdxFile, `./mdx/${entryId}.${language}.mdx`);
+      await copyFile(
+        mdxFile,
+        `${process.cwd()}/mdx/${entryId}.${language}.mdx`,
+      );
     }
 
     entries = { ...entries, ...folderEntries };
@@ -99,7 +102,11 @@ async function main() {
 
   console.log(JSON.stringify(entries, null, 2));
 
-  await writeFile('./mdx/entries.json', JSON.stringify(entries), 'utf-8');
+  await writeFile(
+    `${process.cwd()}/mdx/entries.json`,
+    JSON.stringify(entries),
+    'utf-8',
+  );
 
   await rimraf('./public/assets/');
 
