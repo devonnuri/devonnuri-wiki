@@ -3,11 +3,10 @@ import localFont from 'next/font/local';
 import { cookies } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 
 import './globals.css';
 import { useTranslation } from './i18n';
-import { FALLBACK_LANGUAGE, Language } from './i18n/consts';
+import { Language } from './i18n/consts';
 
 export const metadata: Metadata = {
   title: 'devonnuri.wiki',
@@ -75,10 +74,6 @@ export default async function RootLayout({
 }>) {
   const cookieStore = cookies();
   const lang = cookieStore.get('lang')?.value;
-
-  if (!lang) {
-    redirect(`/${FALLBACK_LANGUAGE}/main_page`);
-  }
 
   const { t } = await useTranslation(lang as Language);
 

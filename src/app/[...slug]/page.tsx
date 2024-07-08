@@ -6,11 +6,10 @@ import rehypeMathjax from 'rehype-mathjax/svg';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
+import { useTranslation } from '@/app/i18n';
+import { Language } from '@/app/i18n/consts';
 import customMDXComponents from '@/components/custom-mdx-components';
 import { Entry } from '@/types/article';
-
-import { useTranslation } from '../i18n';
-import { Language } from '../i18n/consts';
 
 export default async function WikiPage({
   params,
@@ -42,7 +41,7 @@ export default async function WikiPage({
 
   if (!article) {
     if (defaultLanguage !== language) {
-      redirect(`/wiki/${entry.defaultLanguage}/${entryId}`);
+      redirect(`/${defaultLanguage}/${entryId}`);
     } else {
       // Should be unreachable
       return <div>Article not found</div>;

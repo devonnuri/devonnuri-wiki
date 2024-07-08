@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "yarn prebuild && (next dev -p 3030 & onchange './data/' -- yarn prebuild)",
+    "dev": "yarn prebuild && (next dev -p 3031 & onchange './data/' -- yarn prebuild)",
     "prebuild": "tsx scripts/prebuild.ts",
     "build": "next build",
     "start": "next start",
@@ -45,5 +45,6 @@
     "tsx": "^4.7.1",
     "typescript": "^5",
     "typescript-eslint": "^7.4.0"
-  }
+  },
+  "packageManager": "yarn@4.1.1+sha256.f3cc0eda8e5560e529c7147565b30faa43b4e472d90e8634d7134a37c7f59781"
 }
