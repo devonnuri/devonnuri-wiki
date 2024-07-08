@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import { readFile } from 'fs/promises';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { redirect } from 'next/navigation';
+import path from 'path';
 import rehypeMathjax from 'rehype-mathjax/svg';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -10,6 +11,11 @@ import { useTranslation } from '@/app/i18n';
 import { Language } from '@/app/i18n/consts';
 import customMDXComponents from '@/components/custom-mdx-components';
 import { Entry } from '@/types/article';
+
+const ROOT =
+  process.env.NODE_ENV === 'production'
+    ? path.join(process.cwd(), '.next', 'server')
+    : process.cwd();
 
 export default async function WikiPage({
   params,
@@ -25,7 +31,7 @@ export default async function WikiPage({
   const { t } = await useTranslation(language as Language);
 
   const entries: Record<string, Entry> = await readFile(
-    `${process.cwd()}/mdx/entries.json`,
+    path.join(ROOT, 'mdx', 'entries.json'),
     'utf-8',
   ).then((res) => JSON.parse(res.toString()));
 
@@ -53,7 +59,7 @@ export default async function WikiPage({
   );
 
   const markdown = await readFile(
-    `${process.cwd()}/mdx/${entryId}.${language}.mdx`,
+    path.join(ROOT, 'mdx', `${entryId}.${language}.mdx`),
     'utf-8',
   ).then((res) => res.toString());
 
