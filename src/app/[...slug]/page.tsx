@@ -6,8 +6,11 @@ import { redirect } from 'next/navigation';
 import path from 'path';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeMathjax from 'rehype-mathjax/svg';
+import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
+import remarkSectionize from 'remark-sectionize';
+import remarkToc from 'remark-toc';
 
 import { useTranslation } from '@/app/i18n';
 import { Language } from '@/app/i18n/consts';
@@ -125,6 +128,7 @@ export default async function WikiPage({
             parseFrontmatter: true,
             mdxOptions: {
               rehypePlugins: [
+                rehypeSlug,
                 [
                   rehypeMathjax,
                   {
@@ -133,7 +137,12 @@ export default async function WikiPage({
                 ],
                 rehypeHighlight,
               ],
-              remarkPlugins: [remarkGfm, remarkMath],
+              remarkPlugins: [
+                [remarkToc, { ordered: true }],
+                remarkSectionize,
+                remarkGfm,
+                remarkMath,
+              ],
               remarkRehypeOptions: {
                 footnoteLabel: t('footnotes'),
               },

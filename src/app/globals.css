@@ -53,7 +53,44 @@ mjx-container[display="true"] {
   margin: 0.7rem 0;
 }
 
-.content h1:before {
+.content section:has(#toc) {
+  border: 1px solid #000;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+.content section:has(#toc) ol {
+  list-style-type: none;
+  counter-reset: item;
+  margin: 0;
+  padding: 0;
+}
+
+.content section:has(#toc) ol > li {
+  display: table;
+  counter-increment: item;
+}
+
+.content section:has(#toc) ol > li:before {
+  content: counters(item, ".") ". ";
+  display: table-cell;
+  padding-right: 0.6em;    
+}
+
+.content section:has(#toc) li ol > li {
+  margin: 0;
+}
+
+.content section:has(#toc) li ol > li:before {
+  content: counters(item, ".") " ";
+}
+
+.content #toc {
+  display: none;
+}
+
+.content h1:not(#toc):before {
   content: counter(h1counter) ". ";
   counter-increment: h1counter;
 }
