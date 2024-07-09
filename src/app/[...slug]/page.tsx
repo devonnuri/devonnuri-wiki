@@ -12,11 +12,6 @@ import { Language } from '@/app/i18n/consts';
 import customMDXComponents from '@/components/custom-mdx-components';
 import { Entry } from '@/types/article';
 
-const ROOT =
-  process.env.NODE_ENV === 'production'
-    ? path.join(process.cwd(), '.next', 'server')
-    : process.cwd();
-
 export default async function WikiPage({
   params,
 }: {
@@ -31,7 +26,7 @@ export default async function WikiPage({
   const { t } = await useTranslation(language as Language);
 
   const entries: Record<string, Entry> = await readFile(
-    path.join(ROOT, 'mdx', 'entries.json'),
+    path.join(process.cwd(), 'mdx', 'entries.json'),
     'utf-8',
   ).then((res) => JSON.parse(res.toString()));
 
@@ -59,7 +54,7 @@ export default async function WikiPage({
   );
 
   const markdown = await readFile(
-    path.join(ROOT, 'mdx', `${entryId}.${language}.mdx`),
+    path.join(process.cwd(), 'mdx', `${entryId}.${language}.mdx`),
     'utf-8',
   ).then((res) => res.toString());
 
