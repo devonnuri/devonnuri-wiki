@@ -1,8 +1,10 @@
 import dayjs from 'dayjs';
 import { readFile } from 'fs/promises';
+import 'highlight.js/styles/github.css';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { redirect } from 'next/navigation';
 import path from 'path';
+import rehypeHighlight from 'rehype-highlight';
 import rehypeMathjax from 'rehype-mathjax/svg';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -129,8 +131,9 @@ export default async function WikiPage({
                     svg: { scale: 1 },
                   },
                 ],
+                rehypeHighlight,
               ],
-              remarkPlugins: [remarkMath, remarkGfm],
+              remarkPlugins: [remarkGfm, remarkMath],
               remarkRehypeOptions: {
                 footnoteLabel: t('footnotes'),
               },

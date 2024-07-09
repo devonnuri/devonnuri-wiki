@@ -223,7 +223,23 @@ mjx-container[display="true"] {
   list-style-type: lower-roman;
 }
 
-.content pre > code {
+.content code {
   font-family: 'Jetbrains Mono', monospace;
   font-size: 0.9em;
+}
+
+.content code:not(pre > code) {
+  background-color: #f4f4f4;
+  padding: 0.1em 0.3em;
+  border-radius: 0.3em;
+}
+
+.content pre {
+  margin: 1rem 0;
+}
+
+.content pre > code {
+  background-color: #f4f4f4;
+  padding: 0.5em;
+  border-radius: 0.3em;
 }
