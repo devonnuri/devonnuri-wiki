@@ -104,6 +104,23 @@ export default async function WikiPage({
             </ul>
           </div>
         )}
+        {entry.parents.length > 0 && (
+          <div className="flex justify-end gap-1">
+            <span>{t('parent')} : </span>
+            {entry.parents.map((parent, index) => (
+              <>
+                {index > 0 && ' > '}
+                <a
+                  href={`/${language}/${parent}`}
+                  className="no-underline hover:underline"
+                  key={parent}
+                >
+                  {entries[parent].articles[language].title}
+                </a>
+              </>
+            ))}
+          </div>
+        )}
         <div className="flex justify-end gap-1">
           <a
             href={`https://github.com/devonnuri/devonnuri-wiki/edit/main/${article.originalPath}`}
