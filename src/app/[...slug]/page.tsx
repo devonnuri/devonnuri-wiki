@@ -14,8 +14,8 @@ import remarkToc from 'remark-toc';
 
 import { useTranslation } from '@/app/i18n';
 import { Language } from '@/app/i18n/consts';
+import { getEntries } from '@/app/lib/article';
 import customMDXComponents from '@/components/custom-mdx-components';
-import { Entry } from '@/types/article';
 
 export default async function WikiPage({
   params,
@@ -30,11 +30,7 @@ export default async function WikiPage({
 
   const { t } = await useTranslation(language as Language);
 
-  const entries: Record<string, Entry> = await readFile(
-    path.join(process.cwd(), 'mdx', 'entries.json'),
-    'utf-8',
-  ).then((res) => JSON.parse(res.toString()));
-
+  const entries = await getEntries();
   const entry = entries[entryId];
 
   if (!entries[entryId]) {

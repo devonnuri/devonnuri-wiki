@@ -1,3 +1,6 @@
+import { readFile } from 'fs/promises';
+import path from 'path';
+
 import { Language } from '@/app/i18n/consts';
 
 export interface Frontmatter {
@@ -24,3 +27,8 @@ export interface Article {
   updatedAt: string | null; // ISO 8601
   originalPath: string;
 }
+
+export const getEntries = (): Promise<Record<string, Entry>> =>
+  readFile(path.join(process.cwd(), 'mdx', 'entries.json'), 'utf-8').then(
+    (res) => JSON.parse(res.toString()),
+  );

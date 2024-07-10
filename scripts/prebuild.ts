@@ -66,7 +66,8 @@ async function main() {
         language,
         default: frontmatter.default,
         createdAt: createdAt.trim() || null,
-        updatedAt: updatedAt.trim() || createdAt.trim() || null,
+        updatedAt:
+          updatedAt.trim()?.split('\n')?.[0] || createdAt.trim() || null,
         originalPath: mdxFile,
       };
 
