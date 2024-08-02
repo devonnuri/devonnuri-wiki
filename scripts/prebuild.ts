@@ -6,7 +6,7 @@ import * as path from 'path';
 import { rimraf } from 'rimraf';
 
 import { Language } from '@/app/i18n/consts';
-import { Article, Entry, Frontmatter } from '@/types/article';
+import { Article, Entry, Frontmatter } from '@/app/lib/article';
 
 const execAsync = (command: string) =>
   new Promise<string>((resolve, reject) => {
