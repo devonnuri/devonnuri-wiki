@@ -4,7 +4,6 @@ import 'highlight.js/styles/github.css';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { redirect } from 'next/navigation';
 import path from 'path';
-import { createContext } from 'react';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeMathjax from 'rehype-mathjax/svg';
 import rehypeSlug from 'rehype-slug';
@@ -17,8 +16,6 @@ import { useTranslation } from '@/app/i18n';
 import { FALLBACK_LANGUAGE, Language, checkLanguage } from '@/app/i18n/consts';
 import { getEntries } from '@/app/lib/article';
 import customMDXComponents from '@/components/custom-mdx-components';
-
-export const LanguageContext = createContext<Language>(FALLBACK_LANGUAGE);
 
 export default async function WikiPage({
   params,
