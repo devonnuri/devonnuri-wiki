@@ -185,6 +185,10 @@ mjx-container[display="true"] {
   color: dimgray;
 }
 
+.content .theorem {
+  margin-bottom: 1rem;
+}
+
 .content .theorem .theorem-header {
   border: 1.5px solid #0092C8;
   border-left-width: 0;

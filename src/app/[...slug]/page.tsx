@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { readFile } from 'fs/promises';
 import 'highlight.js/styles/github.css';
+import { Metadata } from 'next';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { redirect } from 'next/navigation';
 import path from 'path';
@@ -17,11 +18,39 @@ import { FALLBACK_LANGUAGE, Language, checkLanguage } from '@/app/i18n/consts';
 import { getEntries } from '@/app/lib/article';
 import customMDXComponents from '@/components/custom-mdx-components';
 
-export default async function WikiPage({
-  params,
-}: {
-  params: { slug: string[] };
-}) {
+interface Props {
+  params: {
+    slug: string[];
+  };
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const [language, entryId] = params.slug;
+
+  const entries = await getEntries();
+  const entry = entries[entryId];
+
+  let title = 'devonnuri.wiki';
+  if (language && checkLanguage(language)) {
+    const { t } = await useTranslation(language);
+
+    if (!entry) {
+      title = t('entry_not_found') + ' - ' + title;
+    } else {
+      const article = entry.articles[language];
+
+      if (article) {
+        title = article.title + ' - ' + title;
+      }
+    }
+  }
+
+  return {
+    title,
+  };
+}
+
+export default async function WikiPage({ params }: Props) {
   const [language, entryId] = params.slug;
 
   if (!language || !checkLanguage(language)) {
