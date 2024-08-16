@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "yarn prebuild && (next dev -p 3031 & onchange './data/' -- yarn prebuild)",
+    "dev": "yarn prebuild && (next dev -p 3031 & onchange './data/' -- yarn prebuild -f '{{file}}' -e '{{event}}')",
     "prebuild": "tsx scripts/prebuild.ts",
     "build": "next build",
     "start": "next start",
@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "accept-language": "^3.0.18",
+    "commander": "^12.1.0",
     "dayjs": "^1.11.12",
     "glob": "^11.0.0",
     "highlight.js": "^11.10.0",
@@ -31,6 +32,7 @@
     "remark-toc": "^9.0.0"
   },
   "devDependencies": {
+    "@commander-js/extra-typings": "^12.1.0",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@types/node": "^22.0.2",
     "@types/react": "^18.3.3",

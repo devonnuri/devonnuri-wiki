@@ -1,12 +1,13 @@
+import { Command, Option } from '@commander-js/extra-typings';
 import { exec } from 'child_process';
-import { copyFile, cp, mkdir, writeFile } from 'fs/promises';
+import { copyFile, cp, mkdir, readFile, writeFile } from 'fs/promises';
 import { glob } from 'glob';
 import * as matter from 'gray-matter';
 import * as path from 'path';
 import { rimraf } from 'rimraf';
 
-import { Language } from '@/app/i18n/consts';
-import { Article, Entry, Frontmatter } from '@/app/lib/article';
+import { checkLanguage } from '@/app/i18n/consts';
+import { Article, Entry, checkFrontmatter } from '@/app/lib/article';
 
 const execAsync = (command: string) =>
   new Promise<string>((resolve, reject) => {
@@ -19,7 +20,78 @@ const execAsync = (command: string) =>
     });
   });
 
-async function main() {
+async function updateArticle(entries: Record<string, Entry>, mdxFile: string) {
+  const parents = mdxFile.split('/').slice(2, -1);
+
+  let entryId = path
+    .basename(mdxFile, '.mdx')
+    .split('.')
+    .slice(0, -1)
+    .join('.');
+
+  const nearestParent = parents.at(-1);
+  const isIndex = entryId === 'index' && nearestParent !== undefined;
+  if (isIndex) {
+    entryId = nearestParent;
+  }
+
+  const language = mdxFile.split('.').at(-2);
+
+  if (!language || !checkLanguage(language)) {
+    throw new Error(`Invalid language: ${language} on ${mdxFile}`);
+  }
+
+  const frontmatter = matter.read(mdxFile).data;
+
+  if (!checkFrontmatter(frontmatter)) {
+    throw new Error(
+      `Invalid frontmatter: ${JSON.stringify(frontmatter)} on ${mdxFile}`,
+    );
+  }
+
+  const createdAt = await execAsync(
+    `git log --diff-filter=A --format=%cI -- ${mdxFile}`,
+  );
+
+  const updatedAt = await execAsync(
+    `git log --diff-filter=M --format=%cI -- ${mdxFile}`,
+  );
+
+  const article: Article = {
+    title: frontmatter.title,
+    subtitle: frontmatter.subtitle,
+    language,
+    default: frontmatter.default || false,
+    createdAt: createdAt.trim() || null,
+    updatedAt: updatedAt.trim()?.split('\n')?.[0] || createdAt.trim() || null,
+    originalPath: mdxFile,
+  };
+
+  let newEntry = entries[entryId];
+  if (newEntry) {
+    newEntry.articles[language] = article;
+    if (article.default) {
+      newEntry.defaultLanguage = language;
+    }
+  } else {
+    newEntry = {
+      id: entryId,
+      parents: isIndex ? parents.slice(0, -1) : parents,
+      defaultLanguage: language,
+      articles: {
+        [language]: article,
+      },
+    };
+  }
+
+  await copyFile(mdxFile, `${process.cwd()}/mdx/${entryId}.${language}.mdx`);
+
+  console.log('[*] Updated article:', mdxFile);
+
+  return newEntry;
+}
+
+async function fullUpdate() {
   await rimraf('./mdx/');
 
   await mkdir('./mdx/', { recursive: true });
@@ -29,79 +101,22 @@ async function main() {
   let entries: Record<string, Entry> = {};
 
   for (const folder of folders) {
-    const parents = folder.split('/').slice(2);
-
     const mdxFiles = await glob(`${folder}/*.mdx`);
 
-    const folderEntries: Record<string, Entry> = {};
+    let folderEntries: Record<string, Entry> = {};
 
     for (const mdxFile of mdxFiles) {
-      let entryId = path
-        .basename(mdxFile, '.mdx')
-        .split('.')
-        .slice(0, -1)
-        .join('.');
+      const newEntry = await updateArticle(entries, mdxFile);
 
-      const nearestParent = parents.at(-1);
-      const isIndex = entryId === 'index' && nearestParent !== undefined;
-      if (isIndex) {
-        entryId = nearestParent;
+      if (newEntry.id in entries) {
+        throw new Error(`Duplicated entry id: ${newEntry.id}`);
       }
 
-      const language = mdxFile.split('.').at(-2) as Language;
-
-      const frontmatter = matter.read(mdxFile).data as Frontmatter;
-
-      const createdAt = await execAsync(
-        `git log --diff-filter=A --format=%cI -- ${mdxFile}`,
-      );
-
-      const updatedAt = await execAsync(
-        `git log --diff-filter=M --format=%cI -- ${mdxFile}`,
-      );
-
-      const article: Article = {
-        title: frontmatter.title,
-        subtitle: frontmatter.subtitle,
-        language,
-        default: frontmatter.default,
-        createdAt: createdAt.trim() || null,
-        updatedAt:
-          updatedAt.trim()?.split('\n')?.[0] || createdAt.trim() || null,
-        originalPath: mdxFile,
-      };
-
-      const existingEntry = folderEntries[entryId];
-      if (existingEntry) {
-        existingEntry.articles[language] = article;
-        if (article.default) {
-          existingEntry.defaultLanguage = language;
-        }
-      } else {
-        folderEntries[entryId] = {
-          id: entryId,
-          parents: isIndex ? parents.slice(0, -1) : parents,
-          defaultLanguage: language,
-          articles: {
-            [language]: article,
-          },
-        };
-      }
-
-      if (entries[entryId]) {
-        throw new Error(`Duplicate entry id: ${entryId}`);
-      }
-
-      await copyFile(
-        mdxFile,
-        `${process.cwd()}/mdx/${entryId}.${language}.mdx`,
-      );
+      folderEntries = { ...folderEntries, [newEntry.id]: newEntry };
     }
 
     entries = { ...entries, ...folderEntries };
   }
-
-  console.log(JSON.stringify(entries, null, 2));
 
   await writeFile(
     `${process.cwd()}/mdx/entries.json`,
@@ -113,6 +128,36 @@ async function main() {
 
   // Copy assets
   await cp('./data/assets/', './public/assets/', { recursive: true });
+
+  console.log(`[*] Updated all ${Object.keys(entries).length} entries`);
 }
 
-main().catch(console.error);
+const program = new Command()
+  .addOption(new Option('-f, --file <file>', 'File to update'))
+  .addOption(
+    new Option('-e, --event <event>', 'File event').choices([
+      'add',
+      'addDir',
+      'change',
+      'unlink',
+      'unlinkDir',
+    ] as const),
+  )
+  .parse();
+const options = program.opts();
+
+(async () => {
+  if (
+    options.file &&
+    options.file.endsWith('.mdx') &&
+    (options.event === 'add' || options.event === 'change')
+  ) {
+    const entries = await readFile(
+      path.join(process.cwd(), 'mdx', 'entries.json'),
+      'utf-8',
+    ).then((res) => JSON.parse(res.toString()));
+    await updateArticle(entries, options.file);
+  } else {
+    await fullUpdate();
+  }
+})();

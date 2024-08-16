@@ -6,7 +6,7 @@ import { Language } from '@/app/i18n/consts';
 export interface Frontmatter {
   title: string;
   subtitle?: string;
-  default: boolean;
+  default?: boolean;
 }
 
 export interface Entry {
@@ -27,6 +27,34 @@ export interface Article {
   updatedAt: string | null; // ISO 8601
   originalPath: string;
 }
+
+export const checkFrontmatter = (
+  frontmatter: unknown,
+): frontmatter is Frontmatter => {
+  if (typeof frontmatter !== 'object' || frontmatter === null) {
+    return false;
+  }
+
+  if (typeof (frontmatter as Frontmatter).title !== 'string') {
+    return false;
+  }
+
+  if (
+    (frontmatter as Frontmatter).subtitle !== undefined &&
+    typeof (frontmatter as Frontmatter).subtitle !== 'string'
+  ) {
+    return false;
+  }
+
+  if (
+    (frontmatter as Frontmatter).default !== undefined &&
+    typeof (frontmatter as Frontmatter).default !== 'boolean'
+  ) {
+    return false;
+  }
+
+  return true;
+};
 
 export const getEntries = (): Promise<Record<string, Entry>> =>
   readFile(path.join(process.cwd(), 'mdx', 'entries.json'), 'utf-8').then(
