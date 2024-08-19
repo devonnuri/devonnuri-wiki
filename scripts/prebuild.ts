@@ -49,21 +49,22 @@ async function updateArticle(entries: Record<string, Entry>, mdxFile: string) {
     );
   }
 
-  const createdAt = await execAsync(
-    `git log --diff-filter=A --format=%cI -- ${mdxFile}`,
-  );
+  const gitLogCommand = `git log --format=%cI -- ${mdxFile}`;
+  const [createdAtRaw, updatedAtRaw] = await Promise.all([
+    execAsync(`${gitLogCommand} --diff-filter=A`),
+    execAsync(`${gitLogCommand} --diff-filter=M`),
+  ]);
 
-  const updatedAt = await execAsync(
-    `git log --diff-filter=M --format=%cI -- ${mdxFile}`,
-  );
+  const createdAt = createdAtRaw.trim() || null;
+  const updatedAt = updatedAtRaw.trim()?.split('\n')?.[0] || createdAt;
 
   const article: Article = {
     title: frontmatter.title,
     subtitle: frontmatter.subtitle,
     language,
     default: frontmatter.default || false,
-    createdAt: createdAt.trim() || null,
-    updatedAt: updatedAt.trim()?.split('\n')?.[0] || createdAt.trim() || null,
+    createdAt,
+    updatedAt,
     originalPath: mdxFile,
   };
 
@@ -98,24 +99,26 @@ async function fullUpdate() {
 
   // Fetch all mdx files from /data/wiki
   const folders = await glob('./data/wiki/**/');
-  let entries: Record<string, Entry> = {};
+  const entries: Record<string, Entry> = {};
 
-  let prevEntryIds: Set<string> = new Set();
+  const prevEntryIds = new Set<string>();
 
   for (const folder of folders) {
     const mdxFiles = await glob(`${folder}/*.mdx`);
 
-    for (const mdxFile of mdxFiles) {
+    const updatePromises = mdxFiles.map(async (mdxFile) => {
       const newEntry = await updateArticle(entries, mdxFile);
 
       if (prevEntryIds.has(newEntry.id)) {
         throw new Error(`Duplicated entry id: ${newEntry.id}`);
       }
 
-      entries = { ...entries, [newEntry.id]: newEntry };
-    }
+      entries[newEntry.id] = newEntry;
+    });
 
-    prevEntryIds = new Set(Object.keys(entries));
+    await Promise.all(updatePromises);
+
+    Object.keys(entries).forEach((id) => prevEntryIds.add(id));
   }
 
   await writeFile(
