@@ -1,8 +1,14 @@
 import { createInstance } from 'i18next';
 import resourcesToBackend from 'i18next-resources-to-backend';
+import { headers } from 'next/headers';
 import { initReactI18next } from 'react-i18next/initReactI18next';
 
-import { DEFAULT_NAMESPACE, FALLBACK_LANGUAGE, Language } from './consts';
+import {
+  DEFAULT_NAMESPACE,
+  FALLBACK_LANGUAGE,
+  Language,
+  checkLanguage,
+} from './consts';
 
 const initI18next = async (lang: Language, namespaces: string[]) => {
   const i18nInstance = createInstance();
@@ -26,10 +32,25 @@ const initI18next = async (lang: Language, namespaces: string[]) => {
   return i18nInstance;
 };
 
+export function getLanguage(): Language {
+  const headerList = headers();
+  const lang = headerList.get('x-page-language');
+
+  if (lang && checkLanguage(lang)) {
+    return lang;
+  }
+
+  return FALLBACK_LANGUAGE;
+}
+
 export async function useTranslation(
-  lang: Language,
+  lang?: Language,
   namespaces: string[] = [DEFAULT_NAMESPACE],
 ) {
+  if (!lang) {
+    lang = getLanguage();
+  }
+
   const i18nextInstance = await initI18next(lang, namespaces);
   return {
     t: i18nextInstance.getFixedT(lang, namespaces[0]),

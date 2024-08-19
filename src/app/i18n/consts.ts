@@ -6,5 +6,3 @@ export const checkLanguage = (lang: string): lang is Language =>
 
 export const FALLBACK_LANGUAGE: Language = 'en';
 export const DEFAULT_NAMESPACE = 'common';
-
-export const LANG_COOKIE_NAME = 'lang';

@@ -2,13 +2,11 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
-import { cookies } from 'next/headers';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import './globals.css';
 import { useTranslation } from './i18n';
-import { Language } from './i18n/consts';
 
 dayjs.extend(relativeTime);
 
@@ -76,10 +74,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = cookies();
-  const lang = cookieStore.get('lang')?.value;
-
-  const { t } = await useTranslation(lang as Language);
+  const { t } = await useTranslation();
 
   return (
     <html>

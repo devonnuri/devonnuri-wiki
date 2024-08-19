@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { LANGUAGES, LANG_COOKIE_NAME } from '@/app/i18n/consts';
+import { LANGUAGES } from '@/app/i18n/consts';
 
 export const config = {
   // matcher: '/:lng*'
@@ -8,19 +8,13 @@ export const config = {
 };
 
 export function middleware(req: NextRequest) {
-  const lang = LANGUAGES.find((loc) =>
-    req.nextUrl.pathname.startsWith(`/${loc}`),
-  );
+  console.log('url', req.nextUrl.pathname);
+  const lang = LANGUAGES.find((l) => req.nextUrl.pathname.startsWith(`/${l}`));
   if (!lang) {
     return NextResponse.next();
   }
 
-  const referer = req.headers.get('referer');
-  if (!referer) {
-    return NextResponse.next();
-  }
-
   const response = NextResponse.next();
-  if (lang) response.cookies.set(LANG_COOKIE_NAME, lang);
+  if (lang) response.headers.set('x-page-language', lang);
   return response;
 }

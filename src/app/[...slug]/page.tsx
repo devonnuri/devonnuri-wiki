@@ -73,6 +73,7 @@ export default async function WikiPage({ params }: Props) {
   const { defaultLanguage } = entry;
 
   const article = entry.articles[language];
+  console.log('[*] article', article);
 
   if (!article) {
     if (defaultLanguage !== language) {

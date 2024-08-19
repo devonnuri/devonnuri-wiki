@@ -100,22 +100,22 @@ async function fullUpdate() {
   const folders = await glob('./data/wiki/**/');
   let entries: Record<string, Entry> = {};
 
+  let prevEntryIds: Set<string> = new Set();
+
   for (const folder of folders) {
     const mdxFiles = await glob(`${folder}/*.mdx`);
-
-    let folderEntries: Record<string, Entry> = {};
 
     for (const mdxFile of mdxFiles) {
       const newEntry = await updateArticle(entries, mdxFile);
 
-      if (newEntry.id in entries) {
+      if (prevEntryIds.has(newEntry.id)) {
         throw new Error(`Duplicated entry id: ${newEntry.id}`);
       }
 
-      folderEntries = { ...folderEntries, [newEntry.id]: newEntry };
+      entries = { ...entries, [newEntry.id]: newEntry };
     }
 
-    entries = { ...entries, ...folderEntries };
+    prevEntryIds = new Set(Object.keys(entries));
   }
 
   await writeFile(
