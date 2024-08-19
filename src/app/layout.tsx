@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
@@ -6,7 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import './globals.css';
-import { useTranslation } from './i18n';
+import { getLanguage, useTranslation } from './i18n';
 
 dayjs.extend(relativeTime);
 
@@ -74,7 +75,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { t } = await useTranslation();
+  const lang = getLanguage();
+  const { t } = await useTranslation(lang);
+
+  dayjs.locale(lang);
 
   return (
     <html>
