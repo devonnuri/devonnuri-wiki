@@ -10,6 +10,23 @@ import { rimraf } from 'rimraf';
 import { LANGUAGES, Language, checkLanguage } from '@/app/i18n/consts';
 import { Article, Entry, checkFrontmatter } from '@/app/lib/article';
 
+if (Object.groupBy === undefined) {
+  Object.groupBy = <T, Y extends string | number | symbol>(
+    arr: T[],
+    callback: (v: T, i: number, a: T[]) => Y,
+  ) => {
+    return arr.reduce(
+      (acc, ...args) => {
+        const key = callback(...args);
+        acc[key] ??= [];
+        acc[key].push(args[0]);
+        return acc;
+      },
+      {} as Record<Y, T[]>,
+    );
+  };
+}
+
 const RECENT_ARTICLE_COUNT = 20;
 
 const execAsync = (command: string) =>
