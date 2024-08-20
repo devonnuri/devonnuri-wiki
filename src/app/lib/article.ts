@@ -19,6 +19,7 @@ export interface Entry {
 }
 
 export interface Article {
+  entryId: string;
   title: string;
   subtitle?: string;
   language: Language;
@@ -58,5 +59,12 @@ export const checkFrontmatter = (
 
 export const getEntries = (): Promise<Record<string, Entry>> =>
   readFile(path.join(process.cwd(), 'mdx', 'entries.json'), 'utf-8').then(
+    (res) => JSON.parse(res.toString()),
+  );
+
+export const getRecentChanges = async (): Promise<
+  Record<Language, Article[]>
+> =>
+  readFile(path.join(process.cwd(), 'mdx', 'recents.json'), 'utf-8').then(
     (res) => JSON.parse(res.toString()),
   );

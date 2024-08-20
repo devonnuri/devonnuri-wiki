@@ -1,13 +1,16 @@
 import { Command, Option } from '@commander-js/extra-typings';
 import { exec } from 'child_process';
+import dayjs from 'dayjs';
 import { copyFile, cp, mkdir, readFile, writeFile } from 'fs/promises';
 import { glob } from 'glob';
 import * as matter from 'gray-matter';
 import * as path from 'path';
 import { rimraf } from 'rimraf';
 
-import { checkLanguage } from '@/app/i18n/consts';
+import { LANGUAGES, Language, checkLanguage } from '@/app/i18n/consts';
 import { Article, Entry, checkFrontmatter } from '@/app/lib/article';
+
+const RECENT_ARTICLE_COUNT = 20;
 
 const execAsync = (command: string) =>
   new Promise<string>((resolve, reject) => {
@@ -20,7 +23,7 @@ const execAsync = (command: string) =>
     });
   });
 
-async function updateArticle(entries: Record<string, Entry>, mdxFile: string) {
+const getParentsAndEntryId = (mdxFile: string) => {
   const parents = mdxFile.split('/').slice(2, -1);
 
   let entryId = path
@@ -34,6 +37,15 @@ async function updateArticle(entries: Record<string, Entry>, mdxFile: string) {
   if (isIndex) {
     entryId = nearestParent;
   }
+
+  return {
+    parents: isIndex ? parents.slice(0, -1) : parents,
+    entryId,
+  };
+};
+
+async function parseArticle(mdxFile: string): Promise<Article> {
+  const { entryId } = getParentsAndEntryId(mdxFile);
 
   const language = mdxFile.split('.').at(-2);
 
@@ -55,10 +67,11 @@ async function updateArticle(entries: Record<string, Entry>, mdxFile: string) {
     execAsync(`${gitLogCommand} --diff-filter=M`),
   ]);
 
-  const createdAt = createdAtRaw.trim() || null;
+  const createdAt = createdAtRaw.trim()?.split('\n')?.[0] || null;
   const updatedAt = updatedAtRaw.trim()?.split('\n')?.[0] || createdAt;
 
-  const article: Article = {
+  return {
+    entryId,
     title: frontmatter.title,
     subtitle: frontmatter.subtitle,
     language,
@@ -67,63 +80,99 @@ async function updateArticle(entries: Record<string, Entry>, mdxFile: string) {
     updatedAt,
     originalPath: mdxFile,
   };
-
-  let newEntry = entries[entryId];
-  if (newEntry) {
-    newEntry.articles[language] = article;
-    if (article.default) {
-      newEntry.defaultLanguage = language;
-    }
-  } else {
-    newEntry = {
-      id: entryId,
-      parents: isIndex ? parents.slice(0, -1) : parents,
-      defaultLanguage: language,
-      articles: {
-        [language]: article,
-      },
-    };
-  }
-
-  await copyFile(mdxFile, `${process.cwd()}/mdx/${entryId}.${language}.mdx`);
-
-  console.log('[*] Updated article:', mdxFile);
-
-  return newEntry;
 }
 
-async function fullUpdate() {
+async function updateAll() {
   await rimraf('./mdx/');
 
   await mkdir('./mdx/', { recursive: true });
 
-  // Fetch all mdx files from /data/wiki
   const folders = await glob('./data/wiki/**/');
   const entries: Record<string, Entry> = {};
 
-  const prevEntryIds = new Set<string>();
+  const recentArticles: Record<Language, Article[]> = LANGUAGES.reduce(
+    (acc, lang) => ({ ...acc, [lang]: [] }),
+    {} as Record<Language, Article[]>,
+  );
 
   for (const folder of folders) {
     const mdxFiles = await glob(`${folder}/*.mdx`);
 
-    const updatePromises = mdxFiles.map(async (mdxFile) => {
-      const newEntry = await updateArticle(entries, mdxFile);
+    const articlePromises = mdxFiles.map(async (mdxFile) => {
+      const article = await parseArticle(mdxFile);
 
-      if (prevEntryIds.has(newEntry.id)) {
-        throw new Error(`Duplicated entry id: ${newEntry.id}`);
+      if (recentArticles[article.language].length < RECENT_ARTICLE_COUNT) {
+        recentArticles[article.language].push(article);
+      } else {
+        const oldestArticle = recentArticles[article.language].at(-1);
+
+        if (
+          oldestArticle &&
+          dayjs(article.updatedAt).isAfter(dayjs(oldestArticle.updatedAt))
+        ) {
+          recentArticles[article.language].pop();
+          recentArticles[article.language].push(article);
+        }
       }
 
-      entries[newEntry.id] = newEntry;
+      recentArticles[article.language].sort((a, b) =>
+        dayjs(a.updatedAt).isBefore(dayjs(b.updatedAt)) ? 1 : -1,
+      );
+
+      return article;
     });
 
-    await Promise.all(updatePromises);
+    const articles = await Promise.all(articlePromises);
 
-    Object.keys(entries).forEach((id) => prevEntryIds.add(id));
+    const entryPromises = Object.entries(
+      Object.groupBy(articles, (article) => article.entryId),
+    ).map(async (group) => {
+      const [entryId, articles] = group;
+
+      if (entries[entryId]) {
+        throw new Error(`Duplicate entry id: ${entryId}`);
+      }
+
+      if (!articles) return;
+
+      const { parents } = getParentsAndEntryId(articles[0].originalPath);
+
+      const entry: Entry = {
+        id: entryId,
+        parents,
+        defaultLanguage: articles.find((a) => a.default)?.language || 'en',
+        articles: articles.reduce(
+          (acc, article) => ({ ...acc, [article.language]: article }),
+          {} as Record<Language, Article>,
+        ),
+      };
+
+      entries[entryId] = entry;
+
+      await Promise.all(
+        articles.map(async (article) => {
+          await copyFile(
+            article.originalPath,
+            `./mdx/${article.entryId}.${article.language}.mdx`,
+          );
+        }),
+      );
+
+      console.log(`[+] Updated ${entryId}`);
+    });
+
+    await Promise.all(entryPromises);
   }
 
   await writeFile(
     `${process.cwd()}/mdx/entries.json`,
     JSON.stringify(entries),
+    'utf-8',
+  );
+
+  await writeFile(
+    `${process.cwd()}/mdx/recents.json`,
+    JSON.stringify(recentArticles),
     'utf-8',
   );
 
@@ -133,6 +182,43 @@ async function fullUpdate() {
   await cp('./data/assets/', './public/assets/', { recursive: true });
 
   console.log(`[*] Updated all ${Object.keys(entries).length} entries`);
+}
+
+async function updateSingle(mdxFile: string) {
+  const article = await parseArticle(mdxFile);
+
+  const entries = await readFile(
+    path.join(process.cwd(), 'mdx', 'entries.json'),
+    'utf-8',
+  ).then((res) => JSON.parse(res.toString()));
+
+  const entry = entries[article.entryId];
+
+  if (!entry) {
+    entries[article.entryId] = {
+      id: article.entryId,
+      parents: [],
+      defaultLanguage: article.language,
+      articles: {
+        [article.language]: article,
+      },
+    };
+  } else {
+    entry.articles[article.language] = article;
+  }
+
+  await writeFile(
+    `${process.cwd()}/mdx/entries.json`,
+    JSON.stringify(entries),
+    'utf-8',
+  );
+
+  await copyFile(
+    article.originalPath,
+    `./mdx/${article.entryId}.${article.language}.mdx`,
+  );
+
+  console.log(`[*] Updated ${article.entryId}`);
 }
 
 const program = new Command()
@@ -155,12 +241,8 @@ const options = program.opts();
     options.file.endsWith('.mdx') &&
     (options.event === 'add' || options.event === 'change')
   ) {
-    const entries = await readFile(
-      path.join(process.cwd(), 'mdx', 'entries.json'),
-      'utf-8',
-    ).then((res) => JSON.parse(res.toString()));
-    await updateArticle(entries, options.file);
+    updateSingle(options.file);
   } else {
-    await fullUpdate();
+    await updateAll();
   }
 })();
