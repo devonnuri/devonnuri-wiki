@@ -29,6 +29,7 @@
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
     "remark-sectionize": "^2.0.0",
+    "remark-smartquote": "^0.0.1",
     "remark-toc": "^9.0.0"
   },
   "devDependencies": {

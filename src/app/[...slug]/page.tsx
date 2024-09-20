@@ -11,10 +11,11 @@ import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkSectionize from 'remark-sectionize';
+import remarkSmartquote from 'remark-smartquote';
 import remarkToc from 'remark-toc';
 
 import { useTranslation } from '@/app/i18n';
-import { FALLBACK_LANGUAGE, Language, checkLanguage } from '@/app/i18n/consts';
+import { FALLBACK_LANGUAGE, checkLanguage } from '@/app/i18n/consts';
 import { getEntries } from '@/app/lib/article';
 import customMDXComponents from '@/components/custom-mdx-components';
 
@@ -188,6 +189,7 @@ export default async function WikiPage({ params }: Props) {
                 remarkSectionize,
                 remarkGfm,
                 remarkMath,
+                remarkSmartquote,
               ],
               remarkRehypeOptions: {
                 footnoteLabel: t('footnotes'),

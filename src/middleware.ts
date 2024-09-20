@@ -8,7 +8,6 @@ export const config = {
 };
 
 export function middleware(req: NextRequest) {
-  console.log('url', req.nextUrl.pathname);
   const lang = LANGUAGES.find((l) => req.nextUrl.pathname.startsWith(`/${l}`));
   if (!lang) {
     return NextResponse.next();
