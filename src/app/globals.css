@@ -290,3 +290,9 @@ mjx-container[display="true"] {
   padding: 0.5em;
   border-radius: 0.3em;
 }
+
+.content hr {
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+  margin: 1rem 0;
+}
