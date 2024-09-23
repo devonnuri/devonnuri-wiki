@@ -45,6 +45,12 @@ mjx-container[display="true"] {
   letter-spacing: -0.03em;
 }
 
+@media screen and (max-width: 48rem) {
+  .content {
+    font-size: 0.9rem;
+  }
+}
+
 .content h1 {
   counter-reset: h2counter;
 
