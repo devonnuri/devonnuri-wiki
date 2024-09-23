@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { LANGUAGES } from '@/app/i18n/consts';
+import { LANGUAGES, checkLanguage } from '@/app/i18n/consts';
 
 export const config = {
   // matcher: '/:lng*'
@@ -10,7 +10,15 @@ export const config = {
 export function middleware(req: NextRequest) {
   const lang = LANGUAGES.find((l) => req.nextUrl.pathname.startsWith(`/${l}`));
   if (!lang) {
-    return NextResponse.next();
+    const acceptLanguage = req.headers.get('accept-language');
+    const response = NextResponse.next();
+    if (acceptLanguage) {
+      const lang = acceptLanguage.split(',')[0].split('-')[0];
+      if (checkLanguage(lang)) {
+        response.headers.set('x-page-language', lang);
+      }
+    }
+    return response;
   }
 
   const response = NextResponse.next();
