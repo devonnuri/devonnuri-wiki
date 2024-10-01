@@ -12,6 +12,6 @@ The features that are (going to be) implemented are as follows:
 - [ ] add icon in sidebar
 - [ ] more elaborate (un)ordered list (_just like the latex's one_)
 - [x] syntax highlighting
-- [ ] table of contents
+- [x] table of contents
 - [ ] search feature
 - [ ] links that point to non-existing document should be in red

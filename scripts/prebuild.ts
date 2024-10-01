@@ -3,7 +3,7 @@ import { exec } from 'child_process';
 import dayjs from 'dayjs';
 import { copyFile, cp, mkdir, readFile, writeFile } from 'fs/promises';
 import { glob } from 'glob';
-import * as matter from 'gray-matter';
+import matter from 'gray-matter';
 import * as path from 'path';
 import { rimraf } from 'rimraf';
 
@@ -78,10 +78,9 @@ async function parseArticle(mdxFile: string): Promise<Article> {
     );
   }
 
-  const gitLogCommand = `git log --format=%cI -- ${mdxFile}`;
   const [createdAtRaw, updatedAtRaw] = await Promise.all([
-    execAsync(`${gitLogCommand} --diff-filter=A`),
-    execAsync(`${gitLogCommand} --diff-filter=M`),
+    execAsync(`git log --format=%cI --diff-filter=A -- ${mdxFile}`),
+    execAsync(`git log --format=%cI --diff-filter=M -- ${mdxFile}`),
   ]);
 
   const createdAt = createdAtRaw.trim()?.split('\n')?.[0] || null;
