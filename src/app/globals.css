@@ -41,8 +41,8 @@ mjx-container[display="true"] {
   text-align: justify;
   hyphens: auto;
 
-  line-height: 1.5;
-  letter-spacing: -0.03em;
+  line-height: 1.7;
+  text-underline-offset: 3px;
 }
 
 @media screen and (max-width: 48rem) {
