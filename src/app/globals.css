@@ -15,7 +15,8 @@
 body {
   color: rgb(var(--foreground-rgb));
 
-  font-family: var(--font-texgyretermes), var(--font-kopubbatang), 'Times New Roman', serif;
+  font-family: var(--font-texgyretermes), var(--font-kopubbatang),
+    'Times New Roman', serif;
 }
 
 @layer utilities {
@@ -24,14 +25,13 @@ body {
   }
 }
 
-
 mjx-container {
   display: inline-block;
   vertical-align: middle;
 }
 
 /* FIXME: */
-mjx-container[display="true"] {
+mjx-container[display='true'] {
   display: flex !important;
   justify-content: center;
 }
@@ -79,9 +79,9 @@ mjx-container[display="true"] {
 }
 
 .content section:has(#toc) ol > li:before {
-  content: counters(item, ".") ". ";
+  content: counters(item, '.') '. ';
   display: table-cell;
-  padding-right: 0.6em;    
+  padding-right: 0.6em;
 }
 
 .content section:has(#toc) li ol > li {
@@ -89,7 +89,7 @@ mjx-container[display="true"] {
 }
 
 .content section:has(#toc) li ol > li:before {
-  content: counters(item, ".") " ";
+  content: counters(item, '.') ' ';
 }
 
 .content #toc {
@@ -97,7 +97,7 @@ mjx-container[display="true"] {
 }
 
 .content h1:not(#toc):before {
-  content: counter(h1counter) ". ";
+  content: counter(h1counter) '. ';
   counter-increment: h1counter;
 }
 
@@ -115,11 +115,12 @@ mjx-container[display="true"] {
 }
 
 .content h2:before {
-  content: counter(h1counter) "." counter(h2counter) ". ";
+  content: counter(h1counter) '.' counter(h2counter) '. ';
   counter-increment: h2counter;
 }
 
-.content h2.nocount:before, .content .footnotes h2:before {
+.content h2.nocount:before,
+.content .footnotes h2:before {
   content: none;
   counter-increment: none;
 }
@@ -196,7 +197,7 @@ mjx-container[display="true"] {
 }
 
 .content .theorem .theorem-header {
-  border: 1.5px solid #0092C8;
+  border: 1.5px solid #0092c8;
   border-left-width: 0;
 
   display: inline-block;
@@ -208,7 +209,7 @@ mjx-container[display="true"] {
 .content .theorem .theorem-header .theorem-title {
   display: inline-block;
 
-  background-color: #0092C8;
+  background-color: #0092c8;
   color: white;
   padding: 0.05rem 0.5rem;
   font-size: 1em;
@@ -227,8 +228,8 @@ mjx-container[display="true"] {
 }
 
 .content .theorem .theorem-body {
-  border: 1px solid #0092C8;
-  padding: 1rem 0.5rem 0.5rem 0.5rem;
+  border: 1px solid #0092c8;
+  padding-top: 0.5rem;
 }
 
 .content table {
@@ -237,7 +238,8 @@ mjx-container[display="true"] {
   border-collapse: collapse;
 }
 
-.content th, .content td {
+.content th,
+.content td {
   border: 1px solid black;
   padding: 0.5rem;
 }

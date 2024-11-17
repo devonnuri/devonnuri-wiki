@@ -9,6 +9,24 @@ default: true
 
 ### 첫번째 형태
 
+<Theorem title="정리" subtitle="불완전성 정리 제1정리">
+'$S$가 참 $\leftrightarrow$ $S$가 증명불가능'인 산술에 관한 명제 $S \in F_0$가 있다.
+</Theorem>
+
+#### 증명
+
+<Theorem title="정리" subtitle={<>뢰브의 정리<sub>Löb's Theorem</sub></>}>
+모든 논리식 $P(x) \in F_1$에 대해, $S\equiv P(\ulcorner S \urcorner)$인 명제 $S\in F_0$이 있다.
+</Theorem>
+
+$P(y,x)$가 "$y$는 괴델수가 $x$인 명제의 증명의 괴델수이다"라는 논리식이라 하자. 이 논리식은 $\mathbb{N}$의 값을 갖는 두 자유 변수<sub>free variable</sub>가 포함된 산술 명제이다.
+
+$Q(x)=\forall y \lnot P(y,x)$라 하자. 그러면 $Q(X)\in F_1$이다.
+
+뢰브의 정리에 따라, $S\equiv Q(\ulcorner S \urcorner)$인 명제 $S\in F_0$가 존재한다.
+
+따라서, $S\equiv \nexists y P(y, \ulcorner S \urcorner)$이다. 이는 '$S$가 참 $\leftrightarrow$ $S$가 증명불가능'를 의미한다. ■
+
 ### 두번째 형태
 
 자연수 집합을 $N=\{0,\,1,\,2,\,\cdots\}$로 정의하자. 모든 $x\in N$에 대해 함수 $f(x):N\rightarrow N$를 계산하는 알고리즘이 있을 때 $f$가 계산 가능하다고 한다. 여기서 알고리즘에는 계산을 완료하는 데 필요한 시간이나 공간에 대한 제한이 없는 것으로 가정한다. 마지막으로, 다음 특성 함수가 계산 가능할 때 집합 $S \subseteq N$가 계산 가능하다고 한다.
@@ -26,7 +44,7 @@ $f$의 치역 $K=\{f(0),\,f(1),\,f(2),\,\cdots\}$가 계산 불가능하도록 �
 
 $P_n$이 단지 명제 $n \notin K$를 나타내기 때문에, 건전성은 단지 증명가능한 명제가 참임을 뜻한다.
 
-<Theorem title="정리" subtitle="불완전성 정리">
+<Theorem title="정리" subtitle="불완전성 정리 제1정리">
 건전한 형식 체계 $\mathcal{F}$에 대해, $n_0 \notin K$이면서 $\nvdash_\mathcal{F} P_{n_0}$인 자연수 $n_0$이 존재한다.
 </Theorem>
 
