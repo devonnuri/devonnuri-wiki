@@ -61,7 +61,7 @@ const getParentsAndEntryId = (mdxFile: string) => {
   };
 };
 
-async function parseArticle(mdxFile: string): Promise<Article> {
+async function parseArticle(mdxFile: string): Promise<Article | null> {
   const { entryId } = getParentsAndEntryId(mdxFile);
 
   const language = mdxFile.split('.').at(-2);
@@ -73,9 +73,7 @@ async function parseArticle(mdxFile: string): Promise<Article> {
   const frontmatter = matter.read(mdxFile).data;
 
   if (!checkFrontmatter(frontmatter)) {
-    throw new Error(
-      `Invalid frontmatter: ${JSON.stringify(frontmatter)} on ${mdxFile}`,
-    );
+    return null;
   }
 
   const [createdAtRaw, updatedAtRaw] = await Promise.all([
@@ -116,6 +114,11 @@ async function updateAll() {
 
     const articlePromises = mdxFiles.map(async (mdxFile) => {
       const article = await parseArticle(mdxFile);
+
+      if (article === null) {
+        console.log(`[!] Invalid frontmatter: ${mdxFile}`);
+        return;
+      }
 
       if (recentArticles[article.language].length < RECENT_ARTICLE_COUNT) {
         recentArticles[article.language].push(article);
@@ -202,6 +205,10 @@ async function updateAll() {
 
 async function updateSingle(mdxFile: string) {
   const article = await parseArticle(mdxFile);
+  if (article === null) {
+    console.log(`[!] Invalid frontmatter: ${mdxFile}`);
+    return;
+  }
 
   const entries = await readFile(
     path.join(process.cwd(), 'mdx', 'entries.json'),

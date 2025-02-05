@@ -229,7 +229,7 @@ mjx-container[display='true'] {
 
 .content .theorem .theorem-body {
   border: 1px solid #0092c8;
-  padding-top: 0.5rem;
+  padding: 1.25rem 0.75rem 0.75rem 0.75rem;
 }
 
 .content table {
