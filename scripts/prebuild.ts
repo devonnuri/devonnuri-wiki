@@ -117,7 +117,7 @@ async function updateAll() {
 
       if (article === null) {
         console.log(`[!] Invalid frontmatter: ${mdxFile}`);
-        return;
+        return null;
       }
 
       if (recentArticles[article.language].length < RECENT_ARTICLE_COUNT) {

@@ -25,9 +25,8 @@ body {
   }
 }
 
-mjx-container {
+mjx-container svg {
   display: inline-block;
-  vertical-align: middle;
 }
 
 /* FIXME: */

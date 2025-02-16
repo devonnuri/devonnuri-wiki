@@ -1,0 +1,88 @@
+---
+title: 2025년 2월 3주차 TIL
+---
+
+# TOC
+
+# 250216
+
+## BOJ 1105 : 팔 (Silver 1)
+
+- 처음에는 나이브하게 $L$부터 $R$까지 돌 생각을 했지만 범위가 너무 넓어서 이건 아니겠다는 생각을 함.
+- 이후에는 예시를 보고 $L$과 $R$의 자리수가 같을 때 leading 8의 최솟값인가 생각을 함.
+- 그러다 $L=880808$, $R=880809$의 반례를 떠올리고 이것이 아님을 깨달음.
+- 직관적으로 $L$과 $R$의 common prefix에서의 8의 개수라고 추측을 함.
+- common prefix가 아닌 부분을 8이 아니도록 바꿈으로써 8의 개수를 최소화할 수 있을 것이라고 간단하게 논증을 세우고 코드를 짬.
+
+```py
+l, r = input().split()
+
+if len(l) < len(r):
+    print(0)
+else:
+    eight = 0
+    for i in range(len(l)):
+        if l[i] != r[i]:
+            break
+        if l[i] == '8':
+            eight += 1
+    print(eight)
+```
+
+## BOJ 1141 : 접두사 (Silver 1)
+
+- $N$이 50이하로 작길래 조금 너그럽게 생각해도 되겠다고 생각했다.
+- 첫번째 접근
+  - 처음에 $\texttt{cnt}=N$으로 시작해서 $A \leq_P B$일 때, $\texttt{cnt}$를 하나씩 깎는 것으로 결과를 계산할 수 있을 것으로 예상했다.
+  - 하지만 $\{\texttt{h},\texttt{hi},\texttt{hello}\}$에서 최적해가 2이므로 $A \leq_P B$에서 깎았으면 $B$가 아닌 문자열에 대해서는 더 이상 세지 않으면 될 것 같았다.
+  - 예제 중 같은 단어가 두 번 등장할 때 문제가 발생하길래 pairwise하게 중복해서 세어지는 것을 제거했다.
+
+  ```py
+  n = int(input())
+  s = []
+  for i in range(n):
+      s.append(input())
+
+  cnt = n
+  same = 0
+  for i in range(n):
+      for j in range(n):
+          if i == j:
+              continue
+          if s[j].startswith(s[i]):
+              cnt -= 1
+              if s[i] == s[j]:
+                  same += 1
+              break
+
+  cnt += same // 2
+  print(cnt)
+  ```
+
+- 그러나 이는 올바른 방식이 아니었다. 결국 여기서 내재하는 구조는 $<_P$[^1]로 이어지는 트리 구조인데 이 트리의 leaf의 개수를 세는 것이 문제의 답인 것이다. leaf의 개수는 첫번째 접근에서처럼 전체 노드 수에서 하나씩 빼서는 구하기 어렵다.
+- 두번째 접근
+  - 위에서 말한 대로 짜면 된다. 동일한 단어는 최대 1개만 들어갈 수 있으므로 처음부터 중복 제거를 해준다. $O\left(N^2\right)$으로 해결할 수 있다.
+
+  ```py
+  n = int(input())
+  s = []
+  for i in range(n):
+      s.append(input())
+
+  s = list(set(s))
+  n = len(s)
+
+  l = [True] * n
+
+  for i in range(n):
+      for j in range(n):
+          if i == j:
+              continue
+          if s[j].startswith(s[i]):
+              l[i] = False
+
+  print(sum(l))
+  ```
+
+
+[^1]: 그러니까 동일한 단어는 고려하지 않는다는 말이다.
