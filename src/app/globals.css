@@ -173,6 +173,14 @@ mjx-container[display='true'] {
   color: #795cb2;
 }
 
+.content a[aria-describedby='footnote-label']:before {
+  content: '[';
+}
+
+.content a[aria-describedby='footnote-label']:after {
+  content: ']';
+}
+
 .content .details {
   text-align: right;
   color: dimgray;
