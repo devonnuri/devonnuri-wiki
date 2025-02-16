@@ -84,5 +84,84 @@ else:
   print(sum(l))
   ```
 
+## BOJ 6549 : 히스토그램에서 가장 큰 직사각형 (Platinum 5)
+
+- 정말 많이, 그리고 오랫동안 (진짜 몇달간) 고민했던 문제다.
+- 아무리 생각해도 $O\left(n^2\right)$ 방법 밖에 떠오르지 않아서 발상의 전환이 필요했다.
+- $h_i$의 범위가 너무 커서 $h$를 기준으로 짜르면 안되지 않나 하고 일찌감치 버려두었다. 하지만, 오늘 좌표 압축 하면 되지 않을까 싶었다.
+- $h_n$를 높이가 큰 순으로 정렬하고 각 $h_i$과 인접하는 것을 찾아서 Union-Find의 merge 연산을 해주면 된다고 생각했다.
+- 원래는 높이를 `map<int,vector<int>>` 식으로 저장하는 게 낫지 않을까 싶었는데, 구현도 불편하고 그냥 해도 풀릴 것 같았다.
+- 아무튼 풀고 나서 기분이 매우 좋았다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef vector<int> vi;
+typedef long long ll;
+typedef pair<int, int> pii;
+
+struct UnionFind {
+  vi parent;
+  vi setSize;
+
+  UnionFind(int n) {
+    parent.resize(n, -1);
+    setSize.resize(n, 0);
+  }
+
+  int getParent(int x) {
+    if (parent[x] == -1) return -1;
+    if (parent[x] == x) return x;
+    return parent[x] = getParent(parent[x]);
+  }
+
+  // returns set size
+  int merge(int a, int b) {
+    a = getParent(a);
+    b = getParent(b);
+    if (a == -1 || b == -1) return 0;
+    if (a < b)
+      return parent[b] = a, setSize[a] += setSize[b]; // store size only in parent.
+    return parent[a] = b, setSize[b] += setSize[a];
+  }
+
+  void addItem(int a) {
+    parent[a] = a;
+    setSize[a] = 1;
+  }
+};
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n;
+  while (cin >> n, n > 0) {
+    vector<pii> hp(n);
+    UnionFind uf(n);
+    for (int i=0;i<n;i++) {
+      int h;
+      cin >> h;
+      hp.emplace_back(h, i);
+    }
+    sort(hp.begin(), hp.end(), greater());
+
+    ll mm = hp[0].first;
+    for (auto [h, p] : hp) {
+      uf.addItem(p);
+
+      if (p + 1 < n)
+        mm = max(mm, (ll) uf.merge(p, p + 1) * h);
+      if (p - 1 >= 0)
+        mm = max(mm, (ll) uf.merge(p, p - 1) * h);
+    }
+
+    cout << mm << '\n';
+  }
+
+  return 0;
+}
+```
 
 [^1]: 그러니까 동일한 단어는 고려하지 않는다는 말이다.
