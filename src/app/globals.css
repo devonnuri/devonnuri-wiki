@@ -298,6 +298,7 @@ mjx-container[display='true'] {
   background-color: #f4f4f4;
   padding: 0.5em;
   border-radius: 0.3em;
+  line-height: 1.4;
 }
 
 .content hr {
