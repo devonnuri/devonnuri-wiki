@@ -15,7 +15,7 @@ import remarkSectionize from 'remark-sectionize';
 import remarkSmartquote from 'remark-smartquote';
 import remarkToc from 'remark-toc';
 
-import { useTranslation } from '@/app/i18n';
+import { getTranslation } from '@/app/i18n';
 import { FALLBACK_LANGUAGE, checkLanguage } from '@/app/i18n/consts';
 import { getEntries } from '@/app/lib/article';
 import customMDXComponents from '@/components/custom-mdx-components';
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   let title = 'devonnuri.wiki';
   if (language && checkLanguage(language)) {
-    const { t } = await useTranslation(language);
+    const { t } = await getTranslation(language);
 
     if (!entry) {
       title = t('entry_not_found') + ' - ' + title;
@@ -67,7 +67,7 @@ export default async function WikiPage({ params }: Props) {
     redirect(`/${language}/main_page`);
   }
 
-  const { t } = await useTranslation(language);
+  const { t } = await getTranslation(language);
 
   const entries = await getEntries();
   const entry = entries[entryId];

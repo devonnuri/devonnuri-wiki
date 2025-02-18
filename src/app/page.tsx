@@ -1,5 +1,5 @@
 import acceptLanguage from 'accept-language';
-import { cookies, headers } from 'next/headers';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { FALLBACK_LANGUAGE, LANGUAGES, checkLanguage } from './i18n/consts';

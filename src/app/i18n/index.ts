@@ -43,7 +43,7 @@ export async function getLanguage(): Promise<Language> {
   return FALLBACK_LANGUAGE;
 }
 
-export async function useTranslation(
+export async function getTranslation(
   lang?: Language,
   namespaces: string[] = [DEFAULT_NAMESPACE],
 ) {

@@ -1,18 +1,13 @@
 import dayjs from 'dayjs';
 
-import { getLanguage, useTranslation } from '@/app/i18n';
-import { Language } from '@/app/i18n/consts';
-import { getEntries, getRecentChanges } from '@/app/lib/article';
+import { getLanguage, getTranslation } from '@/app/i18n';
+import { getRecentChanges } from '@/app/lib/article';
 
 export default async function RecentChanges() {
-  const [entries, recents] = await Promise.all([
-    getEntries(),
-    getRecentChanges(),
-  ]);
+  const recents = await getRecentChanges();
 
   const lang = await getLanguage();
-
-  const { t } = await useTranslation(lang);
+  const { t } = await getTranslation(lang);
 
   return (
     <div>

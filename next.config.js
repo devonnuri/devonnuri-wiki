@@ -2,10 +2,8 @@ const WatchExternalFilesPlugin = require('webpack-watch-files-plugin').default;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    outputFileTracingIncludes: {
-      '/*': [`./mdx/**/*`],
-    },
+  outputFileTracingIncludes: {
+    '/*': [`./mdx/**/*`],
   },
   webpack: (config, { dev }) => {
     if (dev) {

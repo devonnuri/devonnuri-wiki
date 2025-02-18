@@ -7,7 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 import './globals.css';
-import { getLanguage, useTranslation } from './i18n';
+import { getLanguage, getTranslation } from './i18n';
 
 dayjs.extend(relativeTime);
 
@@ -88,14 +88,14 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const lang = await getLanguage();
-  const { t } = await useTranslation(lang);
+  const { t } = await getTranslation(lang);
 
   dayjs.locale(lang);
 
   return (
     <html>
       <body
-        className={`md:px-3 ${texGyreTermes.variable} ${koPubBatang.variable}`}
+        className={`md:px-3 ${texGyreTermes.variable} ${koPubBatang.variable} ${jetBrainsMono.variable}`}
       >
         <div className="w-full max-w-[48rem] mx-auto my-0 px-4 md:px-8 pb-8 border border-black min-h-screen">
           <div className="flex items-center justify-center my-10">
