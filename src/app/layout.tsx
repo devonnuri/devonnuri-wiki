@@ -70,6 +70,18 @@ const koPubBatang = localFont({
   display: 'swap',
 });
 
+const jetBrainsMono = localFont({
+  src: [
+    {
+      path: './fonts/JetbrainsMono-Regular.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-jetbrainsmono',
+  display: 'swap',
+});
+
 export default async function RootLayout({
   children,
 }: Readonly<{

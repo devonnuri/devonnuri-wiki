@@ -280,7 +280,7 @@ mjx-container[display='true'] {
 }
 
 .content code {
-  font-family: 'Jetbrains Mono', monospace;
+  font-family: var(--font-jetbrainsmono), monospace;
   font-size: 0.9em;
 }
 
