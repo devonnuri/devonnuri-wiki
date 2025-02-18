@@ -482,4 +482,152 @@ int main() {
       임을 증명하였다. $\blacksquare$
 </Theorem>
 
+## BOJ 11403 : 경로 찾기 (Silver 1)
+
+- Transitive Closure 구하는 문제이다.
+- 처음에 반복문 순서를 헷갈렸는데, DP적 관점으로 생각할 때 $i\rightarrow j$로 갈 수 있는 다리가 $\left\{0,1,\cdots,k\right\}$ 중에 있는지를 점진적으로 확인해야 하기에 중간 다리인 $k$를 맨 나중에 놓는 것이다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+
+  bool mat[100][100];
+  for (int i=0;i<n;i++)
+    for (int j=0;j<n;j++)
+      cin >> mat[i][j];
+
+  for (int k=0;k<n;k++)
+    for (int i=0;i<n;i++)
+      for (int j=0;j<n;j++)
+        mat[i][j] = mat[i][j] || (mat[i][k] && mat[k][j]);
+
+  for (int i=0;i<n;i++) {
+    for (int j=0;j<n;j++) {
+      cout << mat[i][j] << ' ';
+    }
+    cout << '\n';
+  }
+
+  return 0;
+}
+```
+
+## BOJ 2583 : 영역 구하기 (Silver 1)
+
+- DFS로 풀면 된다.
+- 좌표가 제법 헷갈린다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef long long ll;
+
+bool visited[100][100] = {false, };
+bool mat[100][100] = {false, };
+
+const int D[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+int m, n;
+
+int dfs(int x, int y) {
+  visited[y][x] = true;
+  int result = 1;
+  for (auto [dx, dy] : D) {
+    if (x+dx>=0 && x+dx<n && y+dy>=0 && y+dy<m && !visited[y+dy][x+dx] && !mat[y+dy][x+dx]) {
+      result += dfs(x+dx, y+dy);
+    }
+  }
+  return result;
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int k;
+  cin >> m >> n >> k;
+  for (int t=0;t<k;t++) {
+    int x1, y1, x2, y2;
+    cin >> x1 >> y1 >> x2 >> y2;
+    for (int x=x1;x<x2;x++)
+      for (int y=y1;y<y2;y++)
+        mat[y][x] = true;
+  }
+
+  vector<int> results;
+  for (int x=0;x<n;x++) {
+    for (int y=0;y<m;y++) {
+      if (!mat[y][x] && !visited[y][x]) {
+        results.push_back(dfs(x, y));
+      }
+    }
+  }
+
+  sort(results.begin(), results.end());
+
+  cout << results.size() << '\n';
+  for (int result : results) {
+    cout << result << ' ';
+  }
+
+  return 0;
+}
+```
+
+## BOJ 11057 : 오르막 수 (Silver 1)
+
+- 각 자릿수를 $x_i$ ($1\leq x\leq n$)이라 할 때, 다음을 만족하는 수의 개수를 찾는 문제이다.
+
+  $$
+  0 \leq x_1 \leq x_2 \leq x_3 \leq \cdots \leq x_n \leq 9
+  $$
+
+- 각 자릿수의 조성(0이 몇 개고, 1이 몇 개고, ...)만 결정하면 오르막수가 이것을 정렬한 것으로 유일하게 결정되므로 조성의 경우의 수를 찾으면 된다. 길이가 $n$인 수에서 숫자 $i$의 개수를 $c_i$ ($0\leq i\leq 9$)라고 할 때, 다음의 경우의 수를 세면 된다.
+
+  $$
+  c_0 + c_1 + c_2 + c_3 + ... + c_9 = n
+  $$
+
+- 중복조합으로 계산하면 $\left(\!\!{\binom {10}{n}}\!\!\right)=\binom{n+9}{n}=\binom{n+9}{9}$이다.
+- 중복조합을 그냥 재귀로 계산하면 $O(2^n)$이므로 상당히 문제가 있다. 2D 메모이제이션을 활용하도록 하자. $O(n)$으로 해결 가능하다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int MOD = 10007;
+
+int memo[1010][1010] = {0, };
+
+int comb(int n, int r) {
+  if (n == r || r == 0) return 1;
+  if (memo[n][r] > 0) return memo[n][r];
+  return memo[n][r] = comb(n-1,r-1) % MOD + comb(n-1,r) % MOD;
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  cout << (comb(n+9, 9) % MOD);
+
+  return 0;
+}
+```
+
+## BOJ 2688 : 줄어들지 않아 (Silver 1)
+
+- 바로 윗 문제랑 비슷하다고 해서 날먹했다. 이러면 안 되려나...
+
+## BOJ 1926 : 그림 (Silver 1)
+
+- 또 DFS 문제다. 2583이랑 매우 비슷하다. 날먹 죄송
+
 [^1]: 그러니까 동일한 단어는 고려하지 않는다는 말이다.
