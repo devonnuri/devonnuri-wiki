@@ -73,7 +73,7 @@ const koPubBatang = localFont({
 const jetBrainsMono = localFont({
   src: [
     {
-      path: './fonts/JetbrainsMono-Regular.woff2',
+      path: './fonts/JetBrainsMono-Regular.woff2',
       weight: '400',
       style: 'normal',
     },
