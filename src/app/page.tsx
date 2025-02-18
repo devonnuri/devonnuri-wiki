@@ -8,7 +8,7 @@ import { FALLBACK_LANGUAGE, LANGUAGES, checkLanguage } from './i18n/consts';
 acceptLanguage.languages(LANGUAGES as string[]);
 
 export default async function Home() {
-  const headersList = headers();
+  const headersList = await headers();
 
   const headerLang = headersList.get('x-page-language');
   const lang =
