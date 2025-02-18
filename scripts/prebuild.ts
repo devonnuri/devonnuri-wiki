@@ -8,24 +8,29 @@ import * as path from 'path';
 import { rimraf } from 'rimraf';
 
 import { LANGUAGES, Language, checkLanguage } from '@/app/i18n/consts';
-import { Article, Entry, checkFrontmatter } from '@/app/lib/article';
+import {
+  Article,
+  Entry,
+  SearchEntry,
+  checkFrontmatter,
+} from '@/app/lib/article';
 
-if (Object.groupBy === undefined) {
-  Object.groupBy = <T, Y extends string | number | symbol>(
-    arr: T[],
-    callback: (v: T, i: number, a: T[]) => Y,
-  ) => {
-    return arr.reduce(
-      (acc, ...args) => {
-        const key = callback(...args);
-        acc[key] ??= [];
-        acc[key].push(args[0]);
-        return acc;
-      },
-      {} as Record<Y, T[]>,
-    );
-  };
-}
+import { sanitizeMdx } from './sanitizeMdx';
+
+const groupBy = <T, Y extends string | number | symbol>(
+  arr: T[],
+  callback: (v: T, i: number, a: T[]) => Y,
+) => {
+  return arr.reduce(
+    (acc, ...args) => {
+      const key = callback(...args);
+      acc[key] ??= [];
+      acc[key].push(args[0]);
+      return acc;
+    },
+    {} as Record<Y, T[]>,
+  );
+};
 
 const RECENT_ARTICLE_COUNT = 20;
 
@@ -105,6 +110,7 @@ async function updateAll() {
 
   const folders = await glob('./data/wiki/**/');
   const entries: Record<string, Entry> = {};
+  const searchIndex: Record<string, SearchEntry> = {};
 
   const recentArticles: Record<Language, Article[]> = LANGUAGES.reduce(
     (acc, lang) => ({ ...acc, [lang]: [] }),
@@ -135,13 +141,20 @@ async function updateAll() {
         dayjs(a.updatedAt).isBefore(dayjs(b.updatedAt)) ? 1 : -1,
       );
 
+      const content = await readFile(mdxFile, 'utf-8');
+      searchIndex[article.entryId] = {
+        id: article.entryId,
+        title: article.title,
+        content: await sanitizeMdx(content),
+      };
+
       return article;
     });
 
     const articles = await Promise.all(articlePromises);
 
     const entryPromises = Object.entries(
-      Object.groupBy(articles, (article) => article.entryId),
+      groupBy(articles, (article) => article.entryId),
     ).map(async (group) => {
       const [entryId, articles] = group;
 
@@ -192,6 +205,12 @@ async function updateAll() {
     'utf-8',
   );
 
+  await writeFile(
+    `${process.cwd()}/mdx/searchIndex.json`,
+    JSON.stringify(searchIndex),
+    'utf-8',
+  );
+
   await rimraf('./public/assets/');
 
   // Copy assets
@@ -232,6 +251,24 @@ async function updateSingle(mdxFile: string) {
   await copyFile(
     article.originalPath,
     `./mdx/${article.entryId}.${article.language}.mdx`,
+  );
+
+  const searchIndex = await readFile(
+    path.join(process.cwd(), 'mdx', 'searchIndex.json'),
+    'utf-8',
+  ).then((res) => JSON.parse(res.toString()));
+
+  const content = await readFile(mdxFile, 'utf-8');
+  searchIndex[article.entryId] = {
+    id: article.entryId,
+    title: article.title,
+    content,
+  };
+
+  await writeFile(
+    `${process.cwd()}/mdx/searchIndex.json`,
+    JSON.stringify(searchIndex),
+    'utf-8',
   );
 
   console.log(`[*] Updated ${article.entryId}`);

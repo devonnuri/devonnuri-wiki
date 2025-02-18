@@ -29,6 +29,12 @@ export interface Article {
   originalPath: string;
 }
 
+export interface SearchEntry {
+  id: string;
+  title: string;
+  content: string;
+}
+
 export const checkFrontmatter = (
   frontmatter: unknown,
 ): frontmatter is Frontmatter => {
