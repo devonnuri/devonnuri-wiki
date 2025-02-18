@@ -32,8 +32,8 @@ const initI18next = async (lang: Language, namespaces: string[]) => {
   return i18nInstance;
 };
 
-export function getLanguage(): Language {
-  const headerList = headers();
+export async function getLanguage(): Promise<Language> {
+  const headerList = await headers();
   const lang = headerList.get('x-page-language');
 
   if (lang && checkLanguage(lang)) {
@@ -48,7 +48,7 @@ export async function useTranslation(
   namespaces: string[] = [DEFAULT_NAMESPACE],
 ) {
   if (!lang) {
-    lang = getLanguage();
+    lang = await getLanguage();
   }
 
   const i18nextInstance = await initI18next(lang, namespaces);

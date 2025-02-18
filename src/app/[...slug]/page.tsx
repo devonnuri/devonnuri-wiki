@@ -5,6 +5,7 @@ import { Metadata } from 'next';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import { redirect } from 'next/navigation';
 import path from 'path';
+import { Fragment } from 'react';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeMathjax from 'rehype-mathjax/svg';
 import rehypeSlug from 'rehype-slug';
@@ -20,13 +21,15 @@ import { getEntries } from '@/app/lib/article';
 import customMDXComponents from '@/components/custom-mdx-components';
 
 interface Props {
-  params: {
+  params: Promise<{
     slug: string[];
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const [language, entryId] = params.slug;
+  const {
+    slug: [language, entryId],
+  } = await params;
 
   const entries = await getEntries();
   const entry = entries[entryId];
@@ -52,7 +55,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function WikiPage({ params }: Props) {
-  const [language, entryId] = params.slug;
+  const {
+    slug: [language, entryId],
+  } = await params;
 
   if (!language || !checkLanguage(language)) {
     redirect(`/${FALLBACK_LANGUAGE}/${entryId}`);
@@ -138,16 +143,15 @@ export default async function WikiPage({ params }: Props) {
           <div className="flex justify-end gap-1">
             <span>{t('parent')} : </span>
             {entry.parents.map((parent, index) => (
-              <>
+              <Fragment key={parent}>
                 {index > 0 && ' > '}
                 <a
                   href={`/${language}/${parent}`}
                   className="no-underline hover:underline"
-                  key={parent}
                 >
                   {entries[parent].articles[language].title}
                 </a>
-              </>
+              </Fragment>
             ))}
           </div>
         )}

@@ -87,7 +87,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const lang = getLanguage();
+  const lang = await getLanguage();
   const { t } = await useTranslation(lang);
 
   dayjs.locale(lang);

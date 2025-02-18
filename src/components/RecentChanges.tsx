@@ -10,7 +10,7 @@ export default async function RecentChanges() {
     getRecentChanges(),
   ]);
 
-  const lang = getLanguage();
+  const lang = await getLanguage();
 
   const { t } = await useTranslation(lang);
 
