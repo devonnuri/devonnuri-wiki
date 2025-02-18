@@ -110,7 +110,7 @@ export default async function RootLayout({
           </div>
           <div>
             <input
-              className="w-full text-[1.375em] italic border rounded mx-0 my-2 px-2 py-[0.2rem] border-black"
+              className="w-full text-[1.375em] italic border rounded-sm mx-0 my-2 px-2 py-[0.2rem] border-black"
               type="text"
               placeholder={t('search')}
             />
