@@ -410,76 +410,76 @@ int main() {
 ```
 
 <Theorem title="증명">
-    먼저, $a$, $b$를 양의 정수라고 하고, $d=\gcd(a,b)$라고 하자. 우리가 증명할 식은
+  먼저, $a$, $b$를 양의 정수라고 하고, $d=\gcd(a,b)$라고 하자. 우리가 증명할 식은
 
+  $$
+  \gcd\left(\frac{10^a-1}{9},\frac{10^b-1}{9}\right)=\frac{10^d-1}{9}
+  $$
+
+  인데, 우선 분자에 대해 아래의 사실을 증명하자.
+
+  $$
+  \gcd(10^a-1,10^b-1)=10^d-1.
+  $$
+
+  ---
+
+  1. __$10^d-1$이 $10^a-1$과 $10^b-1$의 공약수임을 보임__
+
+    $d=\gcd(a,b)$이므로, 정수 $k,l$이 존재하여
     $$
-    \gcd\left(\frac{10^a-1}{9},\frac{10^b-1}{9}\right)=\frac{10^d-1}{9}
+    a = d \cdot k,\quad b = d \cdot l
+    $$
+    라고 할 수 있다.
+
+    이때,
+    $$
+    10^a - 1 = 10^{dk} - 1 = \left(10^d-1\right)\left(10^{d(k-1)}+10^{d(k-2)}+\cdots+1\right)
+    $$
+    이므로, $10^d-1$은 $10^a-1$의 인수이다. 같은 논리로 $10^d-1$은 $10^b-1$의 인수이다.
+
+    따라서, $10^d-1 \mid 10^a-1$이고 $10^d-1 \mid 10^b-1$이다.
+
+  2. __$10^d-1$이 최대공약수임을 보임__
+
+    반대로, $m$이 $10^a-1$과 $10^b-1$의 임의의 공약수라고 하자. 그러면
+    $$
+    10^a \equiv 1 \pmod{m}, \quad 10^b \equiv 1 \pmod{m}
+    $$
+    이다.
+
+    Bézout의 정리에 의해, $d = \gcd(a,b)$는 $a$와 $b$의 정수 선형 결합으로 나타낼 수 있으므로, 즉 $s,t$가 존재하여
+    $$
+    d = s\cdot a + t\cdot b,
+    $$
+    양변에 $10$의 거듭제곱을 취하면
+    $$
+    10^d = 10^{s a + t b} = (10^a)^s \cdot (10^b)^t \equiv 1^s \cdot 1^t = 1 \pmod{m}.
+    $$
+    따라서,
+    $$
+    10^d \equiv 1 \pmod{m} \quad\Rightarrow\quad m \mid (10^d-1).
     $$
 
-    인데, 우선 분자에 대해 아래의 사실을 증명하자.
-
+    즉, $10^d-1$은 $10^a-1$과 $10^b-1$의 모든 공약수를 나누므로,
     $$
     \gcd(10^a-1,10^b-1)=10^d-1.
     $$
 
-    ---
+  3. __최종 결론__
 
-    1. __$10^d-1$이 $10^a-1$과 $10^b-1$의 공약수임을 보임__
+    문제에서 주어진 두 수는 $\frac{10^a-1}{9}$와 $\frac{10^b-1}{9}$이다. $10^a-1$과 $10^b-1$는 모두 $9$의 배수이므로, 양변을 $9$로 나누어도 최대공약수의 관계는 보존된다. 즉,
+    $$
+    \gcd\left(\frac{10^a-1}{9},\frac{10^b-1}{9}\right)
+    =\frac{\gcd(10^a-1,10^b-1)}{9}
+    =\frac{10^d-1}{9}.
+    $$
 
-      $d=\gcd(a,b)$이므로, 정수 $k,l$이 존재하여
-      $$
-      a = d \cdot k,\quad b = d \cdot l
-      $$
-      라고 할 수 있다.
-
-      이때,
-      $$
-      10^a - 1 = 10^{dk} - 1 = \left(10^d-1\right)\left(10^{d(k-1)}+10^{d(k-2)}+\cdots+1\right)
-      $$
-      이므로, $10^d-1$은 $10^a-1$의 인수이다. 같은 논리로 $10^d-1$은 $10^b-1$의 인수이다.
-
-      따라서, $10^d-1 \mid 10^a-1$이고 $10^d-1 \mid 10^b-1$이다.
-
-    2. __$10^d-1$이 최대공약수임을 보임__
-
-      반대로, $m$이 $10^a-1$과 $10^b-1$의 임의의 공약수라고 하자. 그러면
-      $$
-      10^a \equiv 1 \pmod{m}, \quad 10^b \equiv 1 \pmod{m}
-      $$
-      이다.
-
-      Bézout의 정리에 의해, $d = \gcd(a,b)$는 $a$와 $b$의 정수 선형 결합으로 나타낼 수 있으므로, 즉 $s,t$가 존재하여
-      $$
-      d = s\cdot a + t\cdot b,
-      $$
-      양변에 $10$의 거듭제곱을 취하면
-      $$
-      10^d = 10^{s a + t b} = (10^a)^s \cdot (10^b)^t \equiv 1^s \cdot 1^t = 1 \pmod{m}.
-      $$
-      따라서,
-      $$
-      10^d \equiv 1 \pmod{m} \quad\Rightarrow\quad m \mid (10^d-1).
-      $$
-
-      즉, $10^d-1$은 $10^a-1$과 $10^b-1$의 모든 공약수를 나누므로,
-      $$
-      \gcd(10^a-1,10^b-1)=10^d-1.
-      $$
-
-    3. __최종 결론__
-
-      문제에서 주어진 두 수는 $\frac{10^a-1}{9}$와 $\frac{10^b-1}{9}$이다. $10^a-1$과 $10^b-1$는 모두 $9$의 배수이므로, 양변을 $9$로 나누어도 최대공약수의 관계는 보존된다. 즉,
-      $$
-      \gcd\left(\frac{10^a-1}{9},\frac{10^b-1}{9}\right)
-      =\frac{\gcd(10^a-1,10^b-1)}{9}
-      =\frac{10^d-1}{9}.
-      $$
-
-      이로써
-      $$
-      \gcd\left(\frac{10^a-1}{9},\frac{10^b-1}{9}\right)=\frac{10^{\gcd(a,b)}-1}{9}
-      $$
-      임을 증명하였다. $\blacksquare$
+    이로써
+    $$
+    \gcd\left(\frac{10^a-1}{9},\frac{10^b-1}{9}\right)=\frac{10^{\gcd(a,b)}-1}{9}
+    $$
+    임을 증명하였다. $\blacksquare$
 </Theorem>
 
 ## BOJ 11403 : 경로 찾기 (Silver 1)
@@ -630,4 +630,363 @@ int main() {
 
 - 또 DFS 문제다. 2583이랑 매우 비슷하다. 날먹 죄송
 
+## BOJ 11404 : 플로이드 (Gold 4)
+
+- 플로이드-워셜 알고리즘이다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int INF = 100000000;
+
+int main() {
+  int n, m; cin >> n >> m;
+  int mat[100][100] = {0, };
+
+  for (int i=0;i<n;i++)
+    for (int j=0;j<n;j++)
+      mat[i][j] = INF;
+
+  for (int i=0;i<m;i++) {
+    int a, b, c;
+    cin >> a >> b >> c;
+    mat[a-1][b-1] = min(mat[a-1][b-1], c);
+  }
+
+  for (int k=0;k<n;k++)
+    for (int i=0;i<n;i++)
+      for (int j=0;j<n;j++)
+        mat[i][j] = min(mat[i][j], mat[i][k] + mat[k][j]);
+
+  for (int i=0;i<n;i++) {
+    for (int j=0;j<n;j++) {
+      cout << (mat[i][j] >= INF || i == j ? 0 : mat[i][j]) << ' ';
+    }
+    cout << '\n';
+  }
+
+  return 0;
+}
+```
+
+# 250219
+
+## BOJ 5014 : 스타트링크 (Silver 1)
+
+- 흔치 않은 1D BFS이다.
+- 더 효율적인 방법이 있을 듯 하다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef pair<int, int> pii;
+
+int main() {
+  int f, s, g, u, d;
+  cin >> f >> s >> g >> u >> d;
+
+  queue<pii> q;
+  q.emplace(s, 0);
+  bool visited[1000001] = {false, };
+
+  int result = -1;
+  while (!q.empty()) {
+    auto [p, c] = q.front();
+    q.pop();
+
+    if (p == g) {
+      result = c;
+      break;
+    }
+
+    if (p+u<=f && !visited[p+u]) {
+      q.emplace(p+u, c+1);
+      visited[p+u] = true;
+    }
+
+    if (p-d>=1 && !visited[p-d]) {
+      q.emplace(p-d, c+1);
+      visited[p-d] = true;
+    }
+  }
+
+  if (result == -1) {
+    cout << "use the stairs";
+  } else {
+    cout << result;
+  }
+
+  return 0;
+}
+```
+
+## BOJ 1759 : 암호 만들기 (Gold 5)
+
+- 백트래킹 문제다.
+- STL `string`이 익숙하지 않아서 애 좀 먹었다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int l, c;
+vector<char> alphabet;
+
+bool isCon(char ch) {
+  switch (ch) {
+    case 'a':
+    case 'e':
+    case 'i':
+    case 'o':
+    case 'u':
+      return false;
+    default:
+      return true;
+  }
+}
+
+string s;
+void dfs(int len, int alphaIdx, int conCnt) {
+  if (len == l) {
+    if (conCnt >= 2 && l - conCnt >= 1) {
+      cout << s << '\n';
+    }
+    return;
+  }
+
+  for (int i = alphaIdx + 1; i < c; i++) {
+    s.push_back(alphabet[i]);
+    dfs(len + 1, i, conCnt + isCon(alphabet[i]));
+    s.pop_back();
+  }
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  cin >> l >> c;
+  alphabet.resize(c);
+
+  for (int i=0;i<c;i++)
+    cin >> alphabet[i];
+
+  sort(alphabet.begin(), alphabet.end());
+
+  for (int i=0; i<c-l+1; i++) {
+    s = string(1, alphabet[i]);
+    dfs(1, i, isCon(alphabet[i]));
+  }
+
+  return 0;
+}
+```
+
+## BOJ 1025 : 제곱수 찾기 (Gold 5)
+
+- $N$, $M$의 범위가 크지 않아서 $O(N^2M^2\max(N,M))$으로 해결할 수 있다.
+- 모든 방향 구하는 게 개빡세다...
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+bool isSquare(int n) {
+  int rt = (int) sqrt(n);
+  return rt * rt == n;
+}
+
+int toNum(char ch) {
+  return ch - '0';
+}
+
+const int P[4][2] = {{1, 1}, {-1, 1}, {-1, -1}, {1, -1}};
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m;
+  char table[9][10];
+
+  cin >> n >> m;
+  for (int i=0; i<n; i++) {
+    cin >> table[i];
+  }
+
+  int mm = -1;
+  for (int i=0;i<n;i++) {
+    for (int j=0;j<m;j++) {
+      if (isSquare(toNum(table[i][j]))) {
+        mm = max(mm, toNum(table[i][j]));
+      }
+      for (int di=0;di<n;di++) {
+        for (int dj=0;dj<m;dj++) {
+          if (di == 0 && dj == 0) continue;
+          for (auto [pi, pj] : P) {
+            int s = 0;
+            for (int k=0;i+di*k*pi>=0 && i+di*k*pi<n && j+dj*k*pj>=0 && j+dj*k*pj<m; k++) {
+              s = s * 10 + toNum(table[i+di*k*pi][j+dj*k*pj]);
+              if (isSquare(s))
+                mm = max(mm, s);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  cout << mm;
+
+  return 0;
+}
+```
+
+## BOJ 1654 : 랜선 자르기 (Silver 2)
+
+- 주어진 랜선으로 만들 수 있는 길이 $l$의 랜선의 개수를 $f(l)$이라 하자.
+- 랜선의 길이를 1만큼 증가시켰을 떄, 개수는 항상 같거나 줄어드므로 $f(l)$은 단조감소한다.
+- 따라서 분할정복(=이진 탐색)으로 $f(l)\geq N$인 upper bound를 $O(\log l)$에 찾을 수 있다.
+- 마지막에 오버플로우 때문에 미치는 줄 알았다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef vector<int> vi;
+typedef long long ll;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int k, n; cin >> k >> n;
+  vi len(k);
+  int mm = 0;
+
+  for (int i=0; i<k; i++)
+    cin >> len[i], mm = max(mm, len[i]);
+
+  int l = 1, r = mm;
+  while (l < r) {
+    int mid = ((ll) l + r + 1) / 2;
+
+    ll cnt = 0;
+    for (int i=0; i<k; i++)
+      cnt += len[i] / mid;
+
+    if (cnt >= n) l = mid;
+    else r = mid - 1;
+  }
+
+  cout << l;
+
+  return 0;
+}
+```
+
+- 분할정복 짜는 거 진짜 너무 헷갈린다. 한 번 정리하고 넘어가자.
+
+<Theorem title="팁" subtitle="분할정복 헷갈리지 않기">
+  - lower bound를 기본 틀로 잡자.
+
+    ```cpp
+    int lower_bound(vector<int>& A, int k) {
+      int lo = 0, hi = A.size(); // [lo, hi)
+      while (lo < hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (A[mid] >= k) // mid가 정답(>=target)이 될 수 있으니 hi를 mid로 옮긴다.
+          hi = mid;
+        else
+          lo = mid + 1;
+      }
+      return lo;
+    }
+    ```
+  - 이제 upper bound는 저 부등호에서 등호를 빼면 되는 것이다! upper bound를 $A_i > k$인 $i$의 lower bound로 해석하는 것이 되겠다.
+
+    ```cpp
+    int upper_bound(vector<int>& A, int k) {
+      int lo = 0, hi = A.size(); // [lo, hi)
+      while (lo < hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (A[mid] > k) // mid가 정답(>target)이 될 수 있으니 hi를 mid로 옮긴다.
+          hi = mid;
+        else
+          lo = mid + 1;
+      }
+      return lo;
+    }
+    ```
+
+  - 왜 반열린구간 $[lo, hi)$으로 만들었나?
+    - 닫힌구간으로 만들 때에는 while문의 조건이 `lo <= hi`가 되고[^2], 이 경우 $lo > hi$일 경우에만 반복문을 빠져나가니까 이 경우 $lo$와 $hi$ 중 어느 것이 정답인지 알 수 없기 때문이다. 굳이 그러려면 따로 변수를 만들어서 정답을 미리 저장해두어야 한다.
+    - 반열린구간으로 만들면 그냥 $lo$나 $hi$ 중에 아무거나 고르면 된다.
+  - 왜 굳이 `mid = (hi + lo) / 2` 대신 `mid = lo + (hi - lo) / 2`로 구현했나?
+    - 둘은 수학적으로는 동일한 구문이다. 다만, 오버플로우를 방지하기 위해선 후자가 나은 구현이다.
+</Theorem>
+
+## BOJ 1541 : 잃어버린 괄호 (Silver 2)
+
+- Matrix Chain Multiplication Problem이 떠올랐다. 그래서 2D DP로 짰다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef vector<int> vi;
+
+const int INF = numeric_limits<int>::max();
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  string s; cin >> s;
+
+  vi nums;
+  vector<char> ops;
+  int dp[25][25];
+
+  int num = 0;
+  for (char ch : s) {
+    if (ch >= '0' && ch <= '9') {
+      num = num * 10 + (ch - '0');
+    } else {
+      nums.push_back(num);
+      ops.push_back(ch);
+      num = 0;
+    }
+  }
+  nums.push_back(num);
+
+  int n = nums.size();
+  for (int i=0; i<n; i++) {
+    dp[i][i] = nums[i];
+    for (int j=i+1; j<n; j++)
+      dp[i][j] = INF;
+  }
+
+  for (int w=2; w<=n; w++) {
+    for (int i=0; i<n-w+1; i++) {
+      for (int k=0; k<w-1; k++) {
+        dp[i][i+w-1] = min(dp[i][i+w-1],
+                             ops[i+k] == '+' ? dp[i][i+k] + dp[i+k+1][i+w-1] : dp[i][i+k] - dp[i+k+1][i+w-1]);
+      }
+    }
+  }
+
+  cout << dp[0][n-1];
+
+  return 0;
+}
+```
+
+- 그러나... 솔브드 기여 창을 보고 깜짝 놀라고 말았다... 그리디로 풀 수 있다는 것을...
+  - 대충 `-`가 나오면 다음 `+`가 등장하기 전까지 모든 수를 음수로 만들어 버릴 수 있으니 첫 `-` 이후 모든 `+`를 `-`로 만들어서 계산하면 되는 것이다..
+  - 2D DP로 짜면서, 아니... 이렇게 어렵다고?? 실버 2가??를 되뇌며 풀었다.
+
 [^1]: 그러니까 동일한 단어는 고려하지 않는다는 말이다.
+[^2]: 그러지 않으려면 앞선 구현처럼 right-biased median을 사용하면 된다.
