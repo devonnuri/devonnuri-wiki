@@ -1214,5 +1214,55 @@ int main() {
 }
 ```
 
+## BOJ 1041 : 주사위 (Gold 5)
+
+- 잘 생각해보면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef long long ll;
+
+const int TWO[12][2] = {{0, 1}, {0, 2}, {0, 3}, {0, 4}, {1, 2}, {1, 3}, {1, 5}, {2, 4}, {2, 5}, {3, 4}, {3, 5}, {4, 5}};
+const int THREE[8][3] = {{0, 1, 2}, {0, 1, 3}, {0, 2, 4}, {0, 3, 4}, {1, 2, 5}, {1, 3, 5}, {2, 4, 5}, {3, 4, 5}};
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  ll n;
+  cin >> n;
+  array<ll, 6> c;
+  for (int i=0;i<6;i++)
+    cin >> c[i];
+
+  if (n == 1) {
+    cout << reduce(c.begin(), c.end()) - *max_element(c.begin(), c.end());
+    return 0;
+  }
+
+  ll oneMin = *min_element(c.begin(), c.end());
+
+  ll twoMin = numeric_limits<int>::max();
+  for (auto [i, j] : TWO) {
+    twoMin = min(twoMin, c[i] + c[j]);
+  }
+
+  ll threeMin = numeric_limits<int>::max();
+  for (auto [i, j, k] : THREE) {
+    threeMin = min(threeMin, c[i] + c[j] + c[k]);
+  }
+
+  ll result = oneMin * ((n - 2) * (n - 2) + (n - 2) * (n - 1) * 4)
+              + twoMin * ((n - 2) * 4 + (n - 1) * 4)
+              + threeMin * 4;
+
+  cout << result;
+
+  return 0;
+}
+```
+
 [^1]: 그러니까 동일한 단어는 고려하지 않는다는 말이다.
 [^2]: 그러지 않으려면 앞선 구현처럼 right-biased median을 사용하면 된다.
