@@ -1231,9 +1231,8 @@ int main() {
   ios_base::sync_with_stdio(false);
   cin.tie(nullptr);
 
-  ll n;
-  cin >> n;
-  array<ll, 6> c;
+  ll n; cin >> n;
+  ll c[6];
   for (int i=0;i<6;i++)
     cin >> c[i];
 
@@ -1245,20 +1244,114 @@ int main() {
   ll oneMin = *min_element(c.begin(), c.end());
 
   ll twoMin = numeric_limits<int>::max();
-  for (auto [i, j] : TWO) {
+  for (auto [i, j] : TWO)
     twoMin = min(twoMin, c[i] + c[j]);
-  }
 
   ll threeMin = numeric_limits<int>::max();
-  for (auto [i, j, k] : THREE) {
+  for (auto [i, j, k] : THREE)
     threeMin = min(threeMin, c[i] + c[j] + c[k]);
-  }
 
   ll result = oneMin * ((n - 2) * (n - 2) + (n - 2) * (n - 1) * 4)
               + twoMin * ((n - 2) * 4 + (n - 1) * 4)
               + threeMin * 4;
 
   cout << result;
+
+  return 0;
+}
+```
+
+# 250222
+
+## BOJ 2565 : 전깃줄 (Gold 5)
+
+- $(a,b)$ 쌍을 $b$를 기준으로 오름차순 정렬했을 때의 $a$의 LIS를 찾으면 된다.
+  - 함수 $a(b)$로 봐도 될 듯.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef pair<int, int> pii;
+
+int n;
+int dp[100] = {0, };
+pii lines[100];
+int dfs(int i) {
+  if (i == n-1) return 1;
+  if (dp[i] > 0) return dp[i];
+
+  dp[i] = 1;
+  for (int j=i+1;j<n;j++)
+    if (lines[i].second < lines[j].second)
+      dp[i] = max(dp[i], 1+dfs(j));
+  return dp[i];
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  cin >> n;
+  for (int i=0;i<n;i++) {
+    int a, b;
+    cin >> a >> b;
+    lines[i] = make_pair(b, a);
+  }
+
+  sort(lines, lines + n);
+
+  int mm = 0;
+  for (int i=0;i<n;i++)
+    mm = max(mm, dfs(i));
+
+  cout << (n - mm);
+
+  return 0;
+}
+```
+
+## SUAPC 2025 Winter
+
+- 4문제 풀었다. 이거는 따로 글을 쓰겠다.
+
+# 240223 : 동전 2
+
+- 쉬운 버전의 냅색 느낌이다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, k; cin >> n >> k;
+  set<int> s;
+  for (int i=0;i<n;i++) {
+    int x;
+    cin >> x;
+    s.insert(x);
+  }
+  int dp[10001];
+  memset(dp, -1, (k+1) * sizeof(int));
+
+  for (auto x : s) {
+    if (x > k) continue;
+    dp[x] = 1;
+    for (int i=1;i<=k;i++) {
+      if (i-x>0 && dp[i-x]>0) {
+        if (dp[i] == -1) {
+          dp[i] = dp[i-x]+1;
+        } else {
+          dp[i] = min(dp[i], dp[i-x]+1);
+        }
+      }
+    }
+  }
+
+  cout << dp[k];
 
   return 0;
 }
