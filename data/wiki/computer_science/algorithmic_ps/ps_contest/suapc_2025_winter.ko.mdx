@@ -1,0 +1,232 @@
+---
+title: 2025 신촌지역 대학교 프로그래밍 동아리 연합 겨울 대회 (SUAPC 2025 Winter) 후기
+---
+
+A, C, F, J번을 해결했고 나중에 B번을 풀었다.
+
+# TOC
+
+# A번 : 노트북 세 대를 가지고 왔다 (Bronze 5)
+
+```py
+a, b = map(int, input().split())
+print(min(a, b))
+```
+
+# B번 : skeep 문자열 (Gold 3)
+
+- 첫번째 접근
+  - $\texttt{s}(\texttt{k}|\texttt{\_})(\texttt{e}|\texttt{\_})(\texttt{e}|\texttt{\_})(\texttt{p}|\texttt{\_})$를 `_`로 치환하는 과정을 해당 패턴이 존재하지 않을 떄까지 반복하려고 했으나 TLE가 나왔다.
+- 두번째 접근
+  - $S=\texttt{s}(\texttt{k}|S)(\texttt{e}|S)(\texttt{e}|S)(\texttt{p}|S)$가 accept되면 accept된 문자열 다음으로 커서를 옮기고 reject되면 처음 커서의 다음으로 옮기는 식으로 DFS를 활용하여 작성했으나 TLE가 나왔다.
+- 세번쨰 접근
+  - reject된 경우에도 지금까지 알아낸 정보를 가지고 업데이트를 한 뒤에 커서를 reject된 다음으로 옮겨야 한다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef tuple<int, int, bool> tiib;
+
+int n;
+string s;
+tiib dfs(int i) { // <ss, len, isLastAccepted>
+  if (s[i] != 's') return make_tuple(0, 1, false);
+
+  int len = 1, ss = 0, j;
+  for (j=1; j<5; j++) {
+    if (i+len>=n) break;
+    if (s[i+len] == "skeep"[j]) {
+      len++;
+    } else {
+      auto [d, len2, accepted] = dfs(i+len);
+      ss += d;
+      len += len2;
+      if (!accepted) break;
+    }
+  }
+  return make_tuple(ss + (j == 5), len, j == 5);
+}
+
+int main() {
+  cin >> n >> s;
+
+  int ss=0, i=0;
+  while (i<n-4) {
+    auto [x, len, _] = dfs(i);
+    ss += x;
+    i += len;
+  }
+
+  cout << ss;
+
+  return 0;
+}
+```
+
+# C번 : 징검다리 게임 (Gold 2)
+
+- 첫번째 접근
+  - 나이브하게 시뮬레이션 하려 헀으나 TLE.
+- 두번쨰 접근
+  - 커맨드를 중심으로 보는 것보단 맵을 중심으로 보는 게 효율적이겠다 싶었다.
+  - 다음 칸이
+    1. 비어 있으면, 다음 `J`까지 커맨드를 넘긴다.
+    1. 곰이면, `A` $n$개가 먼저 나오는 지 `J`가 먼저 나오는 지 확인하고 `A` $n$개가 먼저 나오면 `J`가 나올 때까지 넘긴다. 아니면 `NO`.
+    1. 지뢰면, 다음 커맨드가 `A`나 `J`면 `NO`, `D`면 제거 후에 1의 경우로 다시 확인한다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef vector<int> vi;
+typedef long long ll;
+
+int main() {
+  int n; scanf("%d", &n);
+  vi A(n);
+  for (int i=0;i<n;i++)
+    scanf("%d", &A[i]);
+  int k; scanf("%d\n", &k);
+  char cmd[1000000];
+  vi att, jmp;
+  for (int i=0;i<k;i++) {
+    char ch;
+    scanf("%c", &ch);
+    if (ch == 'J')
+      jmp.push_back(i);
+    if (ch == 'A')
+      att.push_back(i);
+    cmd[i] = ch;
+  }
+  int as = att.size(), js = jmp.size();
+  if (js == 0) {
+    printf("NO"); return 0;
+  }
+
+  int cmdIdx = 0, lastJmp = -1;
+  for (int i=0;i<n-1;i++) {
+    if (A[i+1] == -1) {
+      if (cmd == 'A' || cmd == 'J') {
+        printf("NO"); return 0;
+      }
+      A[i+1] = 0;
+      i--;
+      cmdIdx = (cmdIdx + 1) % k;
+    } else if (A[i+1] > 0) {
+      ll nextJmp = jmp[(lastJmp+1) % js];
+      int attCnt;
+      if (lastJmp == -1) {
+        attCnt = lower_bound(att.begin(), att.end(), nextJmp) - att.begin();
+      } else if (nextJmp < jmp[lastJmp]) {
+        attCnt = lower_bound(att.begin(), att.end(), nextJmp) - lower_bound(att.begin(), att.end(), jmp[lastJmp]) + as;
+      } else if (nextJmp > jmp[lastJmp]) {
+        attCnt = lower_bound(att.begin(), att.end(), nextJmp) - lower_bound(att.begin(), att.end(), jmp[lastJmp]);
+      } else {
+        attCnt = as;
+      }
+      if (attCnt < A[i+1]) {
+        printf("NO");
+        return 0;
+      }
+      lastJmp = (lastJmp + 1) % js;
+      cmdIdx = (jmp[lastJmp] + 1) % k;
+    } else if (A[i+1] == 0) {
+      lastJmp = (lastJmp + 1) % js;
+      cmdIdx = (jmp[lastJmp] + 1) % k;
+    }
+  }
+  printf("YES");
+
+  return 0;
+}
+```
+
+- 다른 사람 풀이를 조금 살펴보니 각 `J`마다 그 전까지의 `A`의 개수를 할당하는 방법이 있었다. 천재인듯.
+
+# F번 : 초코바 만들기 (Bronze 1)
+
+- 처음에 초코바 전부를 한 틀에 밀어 넣는 최소 면적이라고 생각했어서 이거 꽤 어렵겠다고 하고 넘겼었다.[^1] 문제를 꼼꼼히 읽자.
+- 직관적으로 $a_i\leq b_i$로 너비와 높이를 정렬하고 $(\max a_i) \times (\max b_i)$가 최소 면적이 될 것이라고 생각했다.
+- 꼼꼼하게 생각하지는 않았는데 지금 간단히 증명을 떠올려보자면...
+  - 어차피 높이든 너비든 가장 큰 한 쪽 변이 틀의 한 쪽 변이 됨은 분명하다.
+  - 이제 틀의 나머지 한 쪽 변이 무엇이 되어야 하느냐인데, 이 변의 길이를 최소화하는 경우가 틀의 면적이 최소가 된다.
+  - 가장 큰 변을 가진 직사각형($A\times B$ ($A\leq B$)라 하자.)을 제외한 직사각형의 두 변 중에서 큰 변을 $B$ 뒤에 숨기는 것이 자연스럽다. 그러면 모든 직사각형 중 작은 변의 최대 길이가 틀의 나머지 한 쪽 변의 길이가 될 것이다.
+    - 이에 대한 증명은 귀류로 하면 된다. 만약 $a_k<b_k$인 직사각형 $k$가 존재한다면, ...
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef long long ll;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  int ma = -1, mb = -1;
+
+  for (int i=0;i<n;i++) {
+    int a, b;
+    cin >> a >> b;
+    if (a>b) {
+      ma = max(ma, b);
+      mb = max(mb, a);
+    } else {
+      ma = max(ma, a);
+      mb = max(mb, b);
+    }
+  }
+
+  cout << ((ll) ma * mb);
+
+  return 0;
+}
+```
+
+# J번 : blobnom.xyz (Silver 3)
+
+- 하라는 대로 하면 된다.
+- 해결할 수 있는 문제의 수는 이분 탐색으로 구하면 된다.
+- 시간 복잡도는 $O(N \log N + M \log N) = O\left((N+M)\log N\right)$
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef vector<int> vi;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m; cin >> n >> m;
+  vi A(n);
+  for (int i=0;i<n;i++)
+    cin >> A[i];
+
+  sort(A.begin(), A.end());
+
+  for (int j=0;j<m;j++) {
+    int b;
+    cin >> b;
+    int l = upper_bound(A.begin(), A.end(), b) - A.begin();
+    int k = 0;
+    if (l == 0) {
+      cout << "0 ";
+      continue;
+    }
+    while (true) {
+      if (3 * k * (k-1) + 1 <= l && l <= 3 * (k + 1) * k) {
+        break;
+      }
+      k++;
+    }
+    cout << k << ' ';
+  }
+
+  return 0;
+}
+```
+
+[^1]: 궁금해서 이 문제는 어떻게 해결하나 봤더니, 브루트포스나 휴리스틱하게 풀면 된다고 한다. [스택 오버플로우](https://stackoverflow.com/questions/1213394/what-algorithm-can-be-used-for-packing-rectangles-of-different-sizes-into-the-sm)와 [위키백과](https://en.wikipedia.org/wiki/Rectangle_packing#Packing_different_rectangles_in_a_minimum-area_rectangle) 참고.
