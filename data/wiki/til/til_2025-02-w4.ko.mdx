@@ -1,3 +1,114 @@
 ---
 title: 2025년 2월 4주차 TIL
 ---
+
+# 250225
+
+## BOJ 11000 : 강의실 배정 (Gold 5)
+
+- $S_i$와 $T_i$를 한꺼번에 모은 뒤에 시간순으로 정렬하고 스택에 $S_i$를 넣고 $T_i$일때 pop하는 것을 반복한다.
+- 이때 스택의 최대 크기가 강의실의 개수가 된다.
+- 이렇게 구현하면 $T_i\leq S_j$일 경우가 눈에 띈다. 이 경우 스택의 최대 크기를 pop할 때 세되, $S_j$와 $T_i$의 값이 같을 경우 세지 않으면 된다.
+  - 시간이 같을 때 $S$가 먼저 등장하고 $T$가 나중에 등장해야 스택을 유지할 수 있는데 우연히도 `S`가 `T`보다 앞서있다. 오예!
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int N; cin >> N;
+  vector<pair<int, char>> v; v.reserve(2*N);
+
+  for (int i=0;i<N;i++) {
+    int s, t; cin >> s >> t;
+    v.emplace_back(s, 'S');
+    v.emplace_back(t, 'T');
+  }
+
+  sort(v.begin(), v.end()); // 'S' < 'T'
+
+  stack<int> s;
+  int mm = -1;
+  for (int i=0;i<2*N;i++) {
+    auto [pos, st] = v[i];
+    if (st == 'S') {
+      s.push(pos);
+    } else {
+      if (s.top() != pos) {
+        mm = max(mm, (int) s.size());
+      }
+      s.pop();
+    }
+  }
+
+  cout << mm;
+
+  return 0;
+}
+```
+
+# 250226
+
+## BOJ 1107 : 리모컨 (Gold 5)
+
+- 남은 버튼으로 reachable한 채널 번호를 bitset에 저장하고 $N$으로부터 왼쪽 오른쪽을 넓혀가면서 검사해서 (숫자자릿수) + (+- 개수)로 답을 내면 된다.
+- 시작 채널인 100번에서 +-하는게 효율적이면 그걸 따른다.
+- 밑의 코드의 `d`가 같을 때 자릿수가 차이날 수 있기에 왼쪽이 우선이라는 점을 고려하지 못했다.
+
+```
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef vector<int> vi;
+
+bitset<1000001> dp;
+bool digit[10];
+void dfs(int i) {
+  for (int j=0;j<=9;j++) {
+    if (!digit[j]) continue;
+
+    if (i*10+j <= 1000000) {
+      dp[i*10+j] = true;
+      if (i > 0 || j > 0) dfs(i*10+j);
+    }
+  }
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int N, M; cin >> N >> M;
+
+  memset(digit, true, 10);
+  for (int i=0;i<M;i++) {
+    int x; cin >> x;
+    digit[x] = false;
+  }
+
+  dfs(0);
+
+  int num = -1, d;
+  for (d=0;d<=500000;d++) {
+    if (N-d>=0 && dp[N-d]) { // smaller one first
+      num = N-d;
+      break;
+    }
+    if (N+d<=1000000 && dp[N+d]) {
+      num = N+d;
+      break;
+    }
+  }
+
+  if (num == -1) { // no num button
+    cout << abs(N-100);
+  } else {
+    cout << min((int) log10(max(num, 1)) + d + 1, abs(N-100));
+  }
+
+  return 0;
+}
+```
