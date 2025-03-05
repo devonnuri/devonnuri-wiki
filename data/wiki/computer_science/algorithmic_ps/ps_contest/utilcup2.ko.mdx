@@ -1,0 +1,528 @@
+---
+title: 제2회 유틸컵 후기
+---
+
+8문제 해결했다.
+
+# TOC
+
+#	☕🔤🟰 - Java String Equals
+
+- 그냥 하다가 낚였다.
+- $A=\texttt{nuLL}$, $B=\texttt{null}$ 등의 반례가 떠올라서 고쳐 제출했다.
+
+```py
+a = input()
+b = input()
+if a == 'null':
+  print('NullPointerException')
+  print('NullPointerException')
+elif b == 'null':
+  print('false')
+  print('false')
+else:
+  print(str(a == b).lower())
+  print(str(a.lower() == b.lower()).lower())
+```
+
+# 🅰️✖️🅱️ - 곱셈을 누가 이렇게 해 ㅋㅋ
+
+```py
+t = int(input())
+for _ in range(t):
+  a, b = input().split()
+  l = max(len(a), len(b))
+  a2 = a.rjust(l, '1')
+  b2 = b.rjust(l, '1')
+  res = ''
+  for i in range(l):
+    res += str(int(a2[i]) * int(b2[i]))
+  print(int(int(res) == int(a) * int(b)))
+```
+
+# 🏁✂️ - Texture Wrapping
+
+```py
+n, m = map(int, input().split())
+u, v = map(int, input().split())
+tex = []
+for i in range(u):
+  tex.append(input())
+method = input()
+
+if method == 'clamp-to-edge':
+  for i in range(n):
+    for j in range(m):
+      print(tex[min(i,u-1)][min(j,v-1)], end='')
+    print()
+elif method == 'repeat':
+  for i in range(n):
+    for j in range(m):
+      print(tex[i%u][j%v], end='')
+    print()
+else:
+  for i in range(n):
+    for j in range(m):
+      # print((i, j), (abs(i%u-(0 if (i//u)%2==0 else u-1)), abs(j%v-(0 if (j//v)%2==0 else v-1))))
+      print(tex[abs(i%u-(0 if (i//u)%2==0 else u-1))][abs(j%v-(0 if (j//v)%2==0 else v-1))], end='')
+    print()
+```
+
+# 🔁♾️ - Infinite Array Swaps
+
+- 공통 문자를 앞에 몰아두고 나머지를 뒤에 붙이면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  vi A(n), B(n);
+  map<int, int> ma, mb;
+  set<int> keyab;
+  for (int i=0;i<n;i++) {
+    cin >> A[i];
+    ma[A[i]]++;
+    keyab.insert(A[i]);
+  }
+  for (int i=0;i<n;i++) {
+    cin >> B[i];
+    mb[B[i]]++;
+    keyab.insert(B[i]);
+  }
+
+  map<int, int> mab;
+  for (int k : keyab)
+    mab[k] = min(ma[k], mb[k]);
+
+  vi Ap, Bp; Ap.reserve(n); Bp.reserve(n);
+  int cnt = 0;
+  for (auto [k, v] : mab) {
+    cnt += v;
+    Ap.insert(Ap.end(), v, k);
+    Bp.insert(Bp.end(), v, k);
+    ma[k] -= v;
+    mb[k] -= v;
+  }
+
+  for (auto [k, v] : ma)
+    Ap.insert(Ap.end(), v, k);
+  for (auto [k, v] : mb)
+    Bp.insert(Bp.end(), v, k);
+
+  cout << cnt << '\n';
+
+  for (int a : Ap)
+    cout << a << ' ';
+  cout << '\n';
+  for (int b : Bp)
+    cout << b << ' ';
+
+  return 0;
+}
+```
+
+# 🤔🤡 - 수상한 어릿광대
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+
+array<int, 4> reward;
+int t = 0;
+int tInc = 4;
+int p = 0;
+int pInc = 1;
+
+void init() {
+  if (35 <= p && p < 65) {
+    reward[0]++;
+  } else if (65 <= p && p < 95) {
+    reward[1]++;
+  } else if (95 <= p && p < 125) {
+    reward[2]++;
+  } else if (p >= 125) {
+    reward[3]++;
+  }
+  t = p = 0;
+  tInc = 4;
+  pInc = 1;
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+
+  for (int i=0;i<n;i++) {
+    if (t > 240) {
+      init();
+    }
+    int d; cin >> d;
+    if (d == 1) {
+      init();
+      continue;
+    } else if (d == 2) {
+      if (pInc > 1) {
+        pInc /= 2;
+      } else if (pInc == 1) {
+        tInc += 2;
+      }
+    } else if (d == 4) {
+      t += 56;
+    } else if (d == 5) {
+      if (tInc > 1) tInc--;
+    } else if (d == 6) {
+      if (pInc < 32) pInc *= 2;
+    }
+    p += pInc;
+    t += tInc;
+  }
+
+  for (int i=0;i<4;i++) {
+    cout << reward[i] << '\n';
+  }
+
+  return 0;
+}
+```
+
+# 🟥🟩🟦 - 임스의 땅따먹기
+
+- 땅의 가치 2D 누적합, 땅의 0의 가치 개수 2D 누적합, 설계도 가치 1D 누적합, 이렇게 누적합을 세 번 사용해야 하는 신기한 문제다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+
+int wsum[501][501] = {0, }; // prefix sum, 1-indexed
+int zcnt[501][501] = {0, }; // prefix sum, 1-indexed
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  for (int i=1;i<=n;i++)
+    for (int j=1;j<=n;j++) {
+      int x; cin >> x;
+      wsum[i][j] = wsum[i-1][j] + wsum[i][j-1] - wsum[i-1][j-1] + x;
+      zcnt[i][j] = zcnt[i-1][j] + zcnt[i][j-1] - zcnt[i-1][j-1] + (x == 0);
+    }
+  int k; cin >> k;
+  vi d(k), dsum(k+1); // d = 0-indexed, dsum = prefix sum of d, 1-indexed
+  for (int i=0;i<k;i++)
+    cin >> d[i];
+
+  sort(d.begin(), d.end(), greater());
+
+  dsum[0] = 0;
+  for (int i=1;i<=k;i++)
+    dsum[i] = dsum[i-1] + d[i-1];
+
+  int mm = 0;
+  for (int win=1;win<=n;win++) {
+    for (int i=1;i<=n-win+1;i++) {
+      for (int j=1;j<=n-win+1;j++) {
+        int rbi = i+win-1, rbj = j+win-1;
+        int zpart = zcnt[rbi][rbj] - zcnt[i-1][rbj] - zcnt[rbi][j-1] + zcnt[i-1][j-1];
+        if (zpart > k)
+          continue;
+        int wpart = wsum[rbi][rbj] - wsum[i-1][rbj] - wsum[rbi][j-1] + wsum[i-1][j-1];
+        mm = max(mm, wpart + dsum[zpart]);
+      }
+    }
+  }
+  cout << mm;
+
+  return 0;
+}
+```
+
+# 🏭🔴 - shapex
+
+- 절단기, 회전기, 색칠기는 명세대로 구현하면 된다.
+- 결합기가 문제인데, J를 I의 오른쪽 끝에서부터 차례대로 밀어넣으면 된다. 반례를 스스로 찾아갈 필요가 있었다. 몇 가지 반례를 공유한다.
+  ```text
+  3 2
+  --Cu--Cu
+  ------Cu
+  Cu--Cu--
+  3 1 2 4
+  3 4 3 100
+
+  4 3
+  CuCuCuCu
+  --Cu--Cu
+  ------Cu
+  Cu--Cu--
+  3 1 2 1
+  3 1 3 1
+  3 1 4 100
+
+  6 5
+  CuCuCuCu
+  --Cu--Cu
+  ------Cu
+  ------Cu
+  Cu--Cu--
+  Cu--Cu--
+  3 1 2 1
+  3 1 3 1
+  3 1 4 1
+  3 5 6 5
+  3 1 5 100
+  ```
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vs = vector<string>;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m; cin >> n >> m;
+  vector<vector<string>> reg(101);
+
+  for (int i=1;i<=n;i++) {
+    string s; cin >> s;
+    reg[i].push_back(s);
+  }
+  for (int idx=0;idx<m;idx++) {
+    int op; cin >> op;
+    if (op == 1) {
+      int i, j, k; cin >> i >> j >> k;
+      vs tempJ, tempK;
+      for (const string& s : reg[i]) {
+        string west = s.substr(4, 4);
+        string east = s.substr(0, 4);
+        if (west != "----") {
+          tempJ.push_back("----" + west);
+        }
+        if (east != "----") {
+          tempK.push_back(east + "----");
+        }
+      }
+      reg[j] = tempJ;
+      reg[k] = tempK;
+    } else if (op == 2) {
+      int i, j, k; cin >> i >> j >> k;
+      vs tempJ;
+      for (const string& s : reg[i]) {
+        string s2;
+        for (int a=0;a<4;a++) {
+          s2.append(s.substr(((a - k + 4) % 4) * 2, 2));
+        }
+        tempJ.push_back(s2);
+      }
+      reg[j] = tempJ;
+    } else if (op == 3) {
+      int i, j, k; cin >> i >> j >> k;
+      if (reg[i].empty() || reg[j].empty()) {
+        reg[k].clear();
+        continue;
+      }
+      vs tempK;
+      int dist = 0;
+      vs v;
+      while (dist < reg[i].size()) {
+        vs v2;
+        bool collide = false;
+        for (int b=0;b<min(dist+1,(int)reg[j].size());b++) {
+          string s;
+          for (int a=0;a<4;a++) {
+            bool lempty = reg[i][reg[i].size()-dist+b-1][a*2] == '-';
+            bool rempty = reg[j][b][a*2] == '-';
+            if (!lempty && rempty) {
+              s.insert(a*2, reg[i][reg[i].size()-dist+b-1].substr(a*2, 2));
+            } else if (lempty && !rempty) {
+              s.insert(a*2, reg[j][b].substr(a*2, 2));
+            } else if (!lempty && !rempty) {
+              collide = true;
+              break;
+            } else {
+              s.insert(a*2, "--");
+            }
+          }
+          if (collide) break;
+          v2.push_back(s);
+        }
+        if (collide) break;
+        dist++;
+        v = v2;
+      }
+      tempK.insert(tempK.end(), reg[i].begin(), reg[i].end() - dist);
+      tempK.insert(tempK.end(), v.begin(), v.end());
+      if (reg[j].begin() + dist < reg[j].end())
+        tempK.insert(tempK.end(), reg[j].begin() + dist, reg[j].end()); // (1)
+      if (reg[i].end() - dist + (int) reg[j].size() < reg[i].end())
+        tempK.insert(tempK.end(), reg[i].end() - dist + (int) reg[j].size(), reg[i].end()); // or (2)
+      if (tempK.size() > 4)
+        tempK.erase(tempK.begin() + 4, tempK.end());
+      reg[k] = tempK;
+    } else if (op == 4) {
+      int i, j; char k; cin >> i >> j >> k;
+      vs tempJ;
+      for (string s : reg[i]) {
+        for (int a=0;a<4;a++)
+          if (s[a*2] != '-')
+            s[a*2+1] = k;
+        tempJ.push_back(s);
+      }
+      reg[j] = tempJ;
+    }
+  }
+
+  if (reg[100].empty()) {
+    cout << "None";
+  } else if (reg[100].size() == 1) {
+    cout << reg[100][0];
+  } else {
+    cout << reg[100][0];
+    for (auto it=reg[100].begin()+1;it<reg[100].end();it++) {
+      cout << ':' << *it;
+    }
+  }
+
+  return 0;
+}
+```
+
+# 🏭🔺 - shapey
+
+- shapex 문제의 해를 구성하는 문제이다.
+- 메모리 세그먼트를 구성하는 것처럼 다음과 같이 구역을 나누었다.
+  1. 1-10 : 초기 input 여기에 저장
+  1. 11-50 : (1)을 각 방향으로 쪼갠 것 여기에 저장
+  1. 51-90 : (2)을 색칠해야 할 경우 여기에 저장
+  1. 91-94 : 완성된 각 층을 여기에 저장
+  1. 95-99 : 임시 (레지스터처럼 사용)
+  1. 100 : 완성된 4개의 층을 여기에 저장
+- shapex를 디버거로 삼으면 편하다.
+- CTF에서 vm 문제 풀던 옛 생각이 새록새록 나서 재미있었다.
+- format은 gcc에서 C++23부터 사용가능하다는 사실을 이번에 알았다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vs = vector<string>;
+
+const char crws[5] = "CRWS";
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  int shape[4] = {-1, -1, -1, -1}; // CRWS
+  int uncolored[4] = {-1, -1, -1, -1}; // CRWS
+  for (int i=1;i<=n;i++) {
+    string bank; cin >> bank;
+    for (int j=0;j<4;j++) {
+      char sh = bank[2*j], co = bank[2*j+1];
+      for (int k=0;k<4;k++) {
+        if (sh == "CRWS"[k]) {
+          shape[k] = 11 + (i - 1) * 4 + j;
+          if (co == 'u') {
+            uncolored[k] = 11 + (i - 1) * 4 + j;
+          }
+        }
+      }
+    }
+  }
+  string target_raw; cin >> target_raw;
+  vs targets;
+  string temp_str;
+  for (char ch : target_raw) {
+    if (ch == ':') {
+      targets.push_back(temp_str);
+      temp_str.clear();
+    } else {
+      temp_str.push_back(ch);
+    }
+  }
+  targets.push_back(temp_str);
+
+  vs cmds;
+  for (int i=1;i<=n;i++) {
+    int eachIdx = 11 + (i - 1) * 4;
+    cmds.push_back(format("1 {} 95 96", i));
+
+    cmds.push_back(format("2 96 96 1", i));
+    cmds.push_back(format("1 96 {} {}", eachIdx + 1, eachIdx + 0));
+    cmds.push_back(format("2 {} {} 3", eachIdx + 0, eachIdx + 0));
+    cmds.push_back(format("2 {} {} 2", eachIdx + 1, eachIdx + 1));
+
+    cmds.push_back(format("2 95 95 1", i));
+    cmds.push_back(format("1 95 {} {}", eachIdx + 2, eachIdx + 3));
+    cmds.push_back(format("2 {} {} 1", eachIdx + 2, eachIdx + 2));
+  }
+
+  for (int i=1;i<=targets.size(); i++) {
+    int workIdx = 51 + (i-1)*4;
+    int levelIdx = 91 + (i-1);
+    bool shouldMove = true;
+    for (int j=0;j<4;j++) {
+      char sh = targets[i-1][j*2], co = targets[i-1][j*2+1];
+      if (sh == '-') continue;
+      int shIdx = strchr(crws, sh) - crws;
+      if (shape[shIdx] == -1) {
+        cout << -1;
+        return 0;
+      }
+      if (co == 'u') {
+        if (uncolored[shIdx] == -1) {
+          cout << -1;
+          return 0;
+        }
+        if (j == 0) {
+          cmds.push_back(format("2 {} {} {}", uncolored[shIdx], workIdx + j, 2));
+          cmds.push_back(format("2 {} {} {}", workIdx + j, workIdx + j, 2));
+        } else {
+          cmds.push_back(format("2 {} {} {}", uncolored[shIdx], workIdx + j, j));
+        }
+      } else {
+        cmds.push_back(format("4 {} {} {}", shape[shIdx], workIdx + j, co));
+        if (j > 0)
+          cmds.push_back(format("2 {} {} {}", workIdx + j, workIdx + j, j));
+      }
+      if (shouldMove) {
+        cmds.push_back(format("2 {} {} {}", workIdx + j, levelIdx, 2));
+        cmds.push_back(format("2 {} {} {}", levelIdx, levelIdx, 2));
+        shouldMove = false;
+      } else {
+        cmds.push_back(format("3 {} {} {}", levelIdx, workIdx + j, levelIdx));
+      }
+    }
+  }
+
+  cmds.push_back("2 91 100 2");
+  cmds.push_back("2 100 100 2");
+
+  for (int i=2;i<=targets.size();i++) {
+    int levelIdx = 91 + (i-1);
+    cmds.push_back(format("3 100 {} 100", levelIdx));
+  }
+
+  cout << cmds.size() << '\n';
+  for (string s : cmds)
+    cout << s << '\n';
+
+  return 0;
+}
+```

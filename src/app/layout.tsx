@@ -95,9 +95,9 @@ export default async function RootLayout({
   return (
     <html>
       <body
-        className={`md:px-3 ${texGyreTermes.variable} ${koPubBatang.variable} ${jetBrainsMono.variable}`}
+        className={`md:px-3 bg-gray-50 ${texGyreTermes.variable} ${koPubBatang.variable} ${jetBrainsMono.variable}`}
       >
-        <div className="w-full max-w-[48rem] mx-auto my-0 px-4 md:px-8 pb-8 border border-black min-h-screen">
+        <div className="w-full max-w-[48rem] mx-auto my-0 px-4 md:px-8 pb-8 border-2 min-h-screen bg-white">
           <div className="flex items-center justify-center my-10">
             <Link href="./main_page">
               <Image

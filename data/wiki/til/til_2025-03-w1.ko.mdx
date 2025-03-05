@@ -1,0 +1,97 @@
+---
+title: 2025년 2월 1주차 TIL
+---
+
+# TOC
+
+# 250302
+
+## 제2회 유틸컵
+
+- 제2회 유틸컵에 참가했다. 후기는 [여기](/ko/utilcup2) 참조.
+
+# 250304
+
+## BOJ 2206 : 벽 부수고 이동하기
+
+- BFS 한 번 돌려서 벽에 걸리는 애들을 거리 오름차순 PQ에 저장해놓고 BFS 다 돌고 나서 그 PQ를 가지고 BFS를 한 번 더 돌리면 된다.
+- PQ를 사용하는 이유는 기존에 BFS는 어차피 거리순 정렬이 되어 있으므로 그냥 큐를 사용하면 되지만, 벽에 걸리는 것을 저장하게 되면 각기 다른 거리 정보를 가졌기에 순차적으로 BFS를 돌기 위해선 PQ가 필요하다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Node {
+  int x, y, c;
+
+  bool operator<(const Node& n) const {
+    return c > n.c;
+  }
+};
+
+const int d[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+const int INF = 1000 * 1001;
+
+bool maze[1000][1000];
+bool visited[1000][1000] = {false, };
+bool visited2[1000][1000] = {false, };
+
+int main() {
+  int n, m;
+  scanf("%d%d", &n, &m);
+
+  memset(visited, false, 1000 * 1000 * sizeof(bool));
+  for (int i = 0; i < n; i++)
+    for (int j = 0; j < m; j++)
+      scanf("%1d", &maze[i][j]);
+
+  queue<Node> q;
+  priority_queue<Node> pq;
+  q.emplace(0, 0, 1);
+  visited[0][0] = true;
+
+  int res = INF;
+  while (!q.empty()) {
+    auto [x, y, c] = q.front();
+    q.pop();
+
+    if (x == n-1 && y == m-1)
+      res = min(res, c);
+
+    for (auto [dx, dy] : d) {
+      int nx = x + dx, ny = y + dy;
+      if (nx < 0 || nx >= n || ny < 0 || ny >= m) continue;
+      if (visited[nx][ny]) continue;
+      visited[nx][ny] = true;
+
+      if (maze[nx][ny]) {
+        pq.emplace(nx, ny, c+1);
+      } else {
+        q.emplace(nx, ny, c+1);
+      }
+    }
+  }
+
+  while (!pq.empty()) {
+    auto [x, y, c] = pq.top();
+    pq.pop();
+
+    if (x == n-1 && y == m-1)
+      res = min(res, c);
+
+    for (auto [dx, dy] : d) {
+      int nx = x + dx, ny = y + dy;
+      if (nx < 0 || nx >= n || ny < 0 || ny >= m) continue;
+      if (visited2[nx][ny]) continue;
+
+      if (!maze[nx][ny]) {
+        visited2[nx][ny] = true;
+        pq.emplace(nx, ny, c+1);
+      }
+    }
+  }
+
+  printf("%d", res == INF ? -1 : res);
+  return 0;
+}
+```

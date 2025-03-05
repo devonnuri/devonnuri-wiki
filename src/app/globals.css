@@ -84,10 +84,7 @@ mjx-container[display='true'] {
 }
 
 .content section:has(#toc) {
-  border: 1px solid #000;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  margin: 1rem 0;
+  @apply rounded-md bg-gray-50 my-2 px-3 py-2;
 }
 
 .content section:has(#toc) ol {
@@ -113,7 +110,7 @@ mjx-container[display='true'] {
 }
 
 .content section:has(#toc) li ol > li:before {
-  content: counters(item, '.') ' ';
+  content: counters(item, '.') '. ';
 }
 
 .content #toc {

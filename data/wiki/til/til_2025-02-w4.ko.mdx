@@ -2,6 +2,8 @@
 title: 2025년 2월 4주차 TIL
 ---
 
+# TOC
+
 # 250225
 
 ## BOJ 11000 : 강의실 배정 (Gold 5)
@@ -273,5 +275,226 @@ int main() {
   return 0;
 }
 ```
+
+## BOJ 9663 : N-Queen (Gold 4)
+
+- 웰 노운이지만 꽤 어렵다고 생각한다.
+- 2차원 백트래킹으로 꾸역꾸역 풀고 싶어서 그렇게 했다.
+
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+int visited[15][15] = {0, };
+int cnt;
+int n;
+
+void update(int qx, int qy, int d) {
+  visited[qx][qy] += d;
+  for (int i=0;i<n;i++) {
+    if (i != qx)
+      visited[i][qy] += d;
+    if (i != qy)
+      visited[qx][i] += d;
+    if (i != qx && 0<=qy-qx+i && qy-qx+i<n)
+      visited[i][qy-qx+i] += d;
+    if (i != qx && 0<=qy+qx-i && qy+qx-i<n)
+      visited[i][qy+qx-i] += d;
+  }
+}
+
+void dfs(int qx) { // qx == queen count
+  if (qx == n) {
+    cnt++;
+    return;
+  }
+  for (int j = 0; j < n; j++) {
+    if (visited[qx][j] > 0) continue;
+
+    update(qx, j, +1);
+    dfs(qx+1);
+    update(qx, j, -1);
+  }
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  cin >> n;
+  memset(visited, 0, 15 * 15 * sizeof(int));
+  dfs(0);
+  cout << cnt;
+
+  return 0;
+}
+```
+
+## BOJ 1034 : 램프 (Gold 4)
+
+- 스위치를 누르는 위치 및 횟수가 모두 켤 수 있는 행패턴이 일대일로 대응된다는 것을 알면 쉽다.
+- `std::popcount`는 C++20부터 지원된다는 사실...
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef long long ll;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int N, M; cin >> N >> M;
+  map<ll, int> m;
+  for (int i=0;i<N;i++) {
+    string s; cin >> s;
+    ll x = stoll(s, nullptr, 2);
+    m[x]++;
+  }
+  int K; cin >> K;
+
+  int mm = 0;
+  for (auto [pat, cnt] : m) {
+    int zero_count = M - __builtin_popcountll(pat);
+    if (K >= zero_count && (K - zero_count) % 2 == 0)
+      mm = max(mm, cnt);
+  }
+
+  cout << mm;
+
+  return 0;
+}
+```
+
+# 250228
+
+## BOJ 9935 : 문자열 폭발 (Gold 4)
+
+- 너무 어렵게 푼 것 같다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  string haystack, needle;
+  cin >> haystack >> needle;
+
+  int state = 0;
+  vector<int> v;
+  string result;
+  for (int i=0;i<haystack.length();i++) {
+    if (haystack[i] == needle[0]) {
+      if (state > 0) v.push_back(state);
+      state = 1;
+
+      if (needle.size() == 1) {
+        if (v.empty())
+          state = 0;
+        else
+          state = v.back(), v.pop_back();
+      }
+      continue;
+    }
+    bool found = false;
+    for (int j=1;j<needle.size();j++) {
+      if (state == j && haystack[i] == needle[j]) {
+        state++;
+        if (state == needle.size()) {
+          if (v.empty())
+            state = 0;
+          else
+            state = v.back(), v.pop_back();
+        }
+        found = true;
+      }
+    }
+    if (!found) {
+      v.push_back(state);
+      for (int s : v)
+        for (int j=0;j<s;j++)
+          result.push_back(needle[j]);
+      result.push_back(haystack[i]);
+      v.clear();
+      state = 0;
+    }
+  }
+  v.push_back(state);
+  for (int s : v)
+    for (int j=0;j<s;j++)
+      result.push_back(needle[j]);
+
+  cout << (result.empty() ? "FRULA" : result);
+
+  return 0;
+}
+```
+
+- 찾아보니 `needle`과 `haystack[i-m+1..i]`을 비교해서 일치하면 `needle`의 길이만큼 지금까지 쌓아온 문자열에서 삭제하면 되는 것이었다. 그럼 대충 $O(nm)$이었다.
+
+  ```cpp
+  #include <bits/stdc++.h>
+  using namespace std;
+
+  int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string s, bomb;
+    cin >> s >> bomb;
+    string ans;
+    int bombSize = bomb.size();
+
+    for (char c : s) {
+      ans.push_back(c);
+      if (ans.size() >= bombSize && ans.substr(ans.size() - bombSize) == bomb)
+        ans.erase(ans.size() - bombSize);
+    }
+
+    cout << (ans.empty() ? "FRULA" : ans);
+    return 0;
+  }
+  ```
+
+# 250301
+
+- 3월이다...
+- 예제를 바탕으로 bottom-up으로 DP할 방법을 궁리했다.
+- 정렬은 안해도 되나보다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, k; cin >> n >> k;
+  vector<int> dp(k+1, 0);
+  vector<int> v(n);
+
+  for (int i=0;i<n;i++)
+    cin >> v[i];
+
+  sort(v.begin(), v.end());
+
+  dp[0] = 1;
+  for (int i=0;i<n;i++)
+    for (int j=1;j<=k;j++)
+      if (j-v[i]>=0)
+        dp[j] += dp[j-v[i]];
+
+  cout << dp[k];
+
+  return 0;
+}
+```
+
 
 [^1]: 생각해보니 $(k-l)(k+l)=16$으로 인수분해 하고 정수해의 후보를 추리는 것이 더 깔끔해보인다.
