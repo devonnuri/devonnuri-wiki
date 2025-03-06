@@ -95,3 +95,132 @@ int main() {
   return 0;
 }
 ```
+
+# 240305
+
+## BOJ 1967 : 트리의 지름
+
+- 각 노드가 꼭지(LCA)일 때의 최대 길이를 저장하면 될 것 같다고 생각했다.
+- 입력이 정렬되어 있길래 이대로 하면 된다고 생각했는데 depth가 정렬되어 있다는 보장이 없었다. 꼼꼼하게 생각하길...
+- 입력을 다 받고 DFS를 돌려서 depth를 계산해두고, 이를 key로 해서 PQ를 돌려서 (일종의) BFS를 해서 각 노드가 꼭지일 때의 최대 길이를 구했다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using pii = pair<int, int>;
+
+struct Node {
+  int depth, i, parent, weight;
+  auto operator<=>(const Node&) const = default;
+};
+
+Node nodes[10001];
+pii maxtwo[10001] = {}; // two largest children weight sum
+
+int dfs(int x) {
+  if (x == 1) return 0;
+  return nodes[x].depth = dfs(nodes[x].parent) + 1;
+}
+
+int main() {
+  ios::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  priority_queue<Node> q;
+  for (int i=2;i<=n;i++) {
+    int par, child, weight; cin >> par >> child >> weight;
+    nodes[child] = {-1, child, par, weight};
+  }
+  nodes[1] = {0, 1, 0, 0};
+  for (int i=2;i<=n;i++)
+    dfs(i);
+  for (int i=1;i<=n;i++)
+    q.push(nodes[i]);
+
+  while (!q.empty()) {
+    auto [_, i, par, w] = q.top();
+    q.pop();
+
+    int tar = maxtwo[i].first + w;
+    if (tar > maxtwo[par].first) {
+      maxtwo[par].second = maxtwo[par].first;
+      maxtwo[par].first = tar;
+    } else if (tar > maxtwo[par].second) {
+      maxtwo[par].second = tar;
+    }
+  }
+
+  int res = 0;
+  for (int i=1;i<=n;i++)
+    res = max(res, maxtwo[i].first + maxtwo[i].second);
+
+  cout << res;
+
+  return 0;
+}
+```
+
+# 240306
+
+## BOJ 14442 : 벽 부수고 이동하기 2
+
+- BOJ 2206번과 크게 다르지 않다.
+- 기존에 내 구현으로는 확장할 수 없어서 새로 짰다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Node {
+  int x, y, c, b;
+};
+
+const int d[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+const int INF = numeric_limits<int>::max();
+
+bool maze[1000][1000];
+bool visited[1000][1000][11] = {false, };
+
+int main() {
+  int n, m, k;
+  scanf("%d%d%d", &n, &m, &k);
+
+  memset(visited, false, 1000 * 1000 * sizeof(bool));
+  for (int i = 0; i < n; i++)
+    for (int j = 0; j < m; j++)
+      scanf("%1d", &maze[i][j]);
+
+  queue<Node> q;
+  q.emplace(0, 0, 1, 0);
+  visited[0][0][0] = true;
+
+  int res = INF;
+  while (!q.empty()) {
+    auto [x, y, c, b] = q.front();
+    q.pop();
+
+    if (x == n-1 && y == m-1)
+      res = min(res, c);
+
+    for (auto [dx, dy] : d) {
+      int nx = x + dx, ny = y + dy;
+      if (nx < 0 || nx >= n || ny < 0 || ny >= m) continue;
+      if (visited[nx][ny][b]) continue;
+      visited[nx][ny][b] = true;
+
+      if (maze[nx][ny]) {
+        if (b < k)
+          q.emplace(nx, ny, c+1, b+1);
+      } else {
+        q.emplace(nx, ny, c+1, b);
+      }
+    }
+  }
+
+  printf("%d", res == INF ? -1 : res);
+
+  return 0;
+}
+```
