@@ -1,5 +1,5 @@
 ---
-title: 2025년 2월 1주차 TIL
+title: 2025년 3월 1주차 TIL
 ---
 
 # TOC
@@ -12,7 +12,7 @@ title: 2025년 2월 1주차 TIL
 
 # 250304
 
-## BOJ 2206 : 벽 부수고 이동하기
+## BOJ 2206 : 벽 부수고 이동하기 (Gold 3)
 
 - BFS 한 번 돌려서 벽에 걸리는 애들을 거리 오름차순 PQ에 저장해놓고 BFS 다 돌고 나서 그 PQ를 가지고 BFS를 한 번 더 돌리면 된다.
 - PQ를 사용하는 이유는 기존에 BFS는 어차피 거리순 정렬이 되어 있으므로 그냥 큐를 사용하면 되지만, 벽에 걸리는 것을 저장하게 되면 각기 다른 거리 정보를 가졌기에 순차적으로 BFS를 돌기 위해선 PQ가 필요하다.
@@ -98,7 +98,7 @@ int main() {
 
 # 240305
 
-## BOJ 1967 : 트리의 지름
+## BOJ 1967 : 트리의 지름 (Gold 4)
 
 - 각 노드가 꼭지(LCA)일 때의 최대 길이를 저장하면 될 것 같다고 생각했다.
 - 입력이 정렬되어 있길래 이대로 하면 된다고 생각했는데 depth가 정렬되어 있다는 보장이 없었다. 꼼꼼하게 생각하길...
@@ -164,7 +164,7 @@ int main() {
 
 # 240306
 
-## BOJ 14442 : 벽 부수고 이동하기 2
+## BOJ 14442 : 벽 부수고 이동하기 2 (Gold 3)
 
 - BOJ 2206번과 크게 다르지 않다.
 - 기존에 내 구현으로는 확장할 수 없어서 새로 짰다.
@@ -224,3 +224,127 @@ int main() {
   return 0;
 }
 ```
+
+## BOJ 1644 : 소수의 연속합 (Gold 3)
+
+- 에라토스테네스의 체를 돌리고 소수의 누적합을 구하고 투포인터로 돌리면 되는 것이었다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+#define sz(a) ((int)(a).size())
+
+using ll = long long;
+
+bitset<4'000'001> sieve;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  sieve.set();
+  sieve[0] = sieve[1] = false;
+  for (int i=2;i<=(int)sqrt(n);i++) {
+    if (!sieve[i]) continue;
+    for (int j=2*i;j<=n;j+=i) {
+      sieve[j] = false;
+    }
+  }
+
+  vector<ll> psum; psum.reserve(sieve.count()+1);
+  ll ss = 0;
+  psum.push_back(0);
+  for (int i=2;i<=n;i++) {
+    if (sieve[i]) {
+      ss += i;
+      psum.push_back(ss);
+    }
+  }
+
+  int l=0, r=1;
+  int ans=0;
+  while (r < sz(psum) && l < r) { // is (l < r) necessary?
+    int x = psum[r]-psum[l];
+    if (x < n) {
+      r++;
+    } else if (x > n) {
+      l++;
+    } else {
+      ans++;
+      l++;
+    }
+  }
+
+  cout << ans;
+
+  return 0;
+}
+```
+
+- 나중에 `l < r`은 제거했어도 되었는데, 이게 되는 이유는 $r < |\texttt{psum}| \rightarrow l < r$이 성립함을 보이면 된다.
+  - 만약 $r$이 끝에 도달하지 않았는 데에도, collapse하려면 $\texttt{psum}_r - \texttt{psum}_l \ge n$이어야 하는데 이 경우는 끝에 도달하는 경우밖에 없다.
+
+## BOJ 2470 : 두 용액 (Gold 5)
+
+- 절댓값을 기준으로 정렬하고 윈도우 크기가 2인 슬라이딩 윈도우를 돌면 된다.
+- 증명을 간단히 스케치해보자면...
+  - $0\le a<b<c$가 있을 때, $(\pm a, \pm b, \pm c)$의 8개의 순서쌍을 고려해보자.[^1]
+  - 이때, 인접한 $|\pm a + \pm b|$나 $|\pm b + \pm c|$가 아닌 $|\pm a + \pm c|$가 최소가 될 경우가 있는지 살펴보자.
+    1. $(+a, +b, +c)$ : $|+a+c|\ge |+a+b|$
+    1. $(-a, +b, +c)$ : $|-a+c|\ge |-a+b|$
+    1. $(+a, -b, +c)$ : $|+a+c|\ge |+a-b|$
+    1. $(+a, +b, -c)$ : $|+a-c|\ge |+b-c|$
+    1. $(-a, -b, +c)$ : $|-a+c|\ge |-b+c|$
+    1. $(+a, -b, -c)$ : $|+a-c|\ge |+a-b|$
+    1. $(-a, +b, -c)$ : $|-a-c|\ge |-a+b|$
+    1. $(-a, -b, -c)$ : $|-a-c|\ge |-a-b|$
+  - 모든 경우에 대해 성립하므로 절댓값을 기준으로 정렬된 3-튜플에 대해 인접한 값의 경우에만 고려해도 된다는 사실을 알게 되었다.
+  - 이를 $N$-튜플로 확장하여도 문제가 없다. 증명 끝.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+using pi = pair<int, int>;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  vi arr(n);
+  for (int i=0;i<n;i++)
+    cin >> arr[i];
+
+  sort(arr.begin(), arr.end(), [](int a, int b){
+    return abs(a) < abs(b);
+  });
+
+  int mm = numeric_limits<int>::max();
+  pi ans;
+  for (int i=1;i<n;i++) {
+    int cur = abs(arr[i-1] + arr[i]);
+    if (mm > cur) {
+      mm = cur;
+      if (arr[i-1] > arr[i])
+        ans = {arr[i], arr[i-1]};
+      else
+        ans = {arr[i-1], arr[i]};
+    }
+  }
+
+  cout << ans.first << ' ' << ans.second;
+
+  return 0;
+}
+```
+
+## BOJ 2467 : 용액 (Gold 5)
+
+- [BOJ 2470](#boj-2470--두-용액-gold-5) 코드로 해결 가능하다.
+
+
+[^1]: 똑똑한 독자들은 $a=b<c$인 경우는 고려하지 않느냐고 물을 것이다. 문제에서 용액의 특성값은 모두 다르다고 한 만큼, $a=b$이면 정렬할 때 $(+a,-a,\pm c)$나 $(-a,+a,\pm c)$ 형태가 될 것이고 여기서 무조건 $\pm a + \mp a=0$(복부호동순)이 최소가 됨을 쉽게 알 수 있다.

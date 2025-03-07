@@ -6,6 +6,8 @@ import localFont from 'next/font/local';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import SearchInput from '@/components/search-input';
+
 import './globals.css';
 import { getLanguage, getTranslation } from './i18n';
 
@@ -109,11 +111,7 @@ export default async function RootLayout({
             </Link>
           </div>
           <div>
-            <input
-              className="w-full text-[1.375em] italic border rounded-sm mx-0 my-2 px-2 py-[0.2rem] border-black"
-              type="text"
-              placeholder={t('search')}
-            />
+            <SearchInput language={lang} placeholder={t('search')} />
             {children}
           </div>
         </div>

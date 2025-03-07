@@ -13,9 +13,7 @@ export interface Entry {
   id: string;
   parents: string[];
   defaultLanguage: Language;
-  articles: {
-    [x: string]: Article;
-  };
+  articles: Record<Language, Article>;
 }
 
 export interface Article {
@@ -74,3 +72,11 @@ export const getRecentChanges = async (): Promise<
   readFile(path.join(process.cwd(), 'mdx', 'recents.json'), 'utf-8').then(
     (res) => JSON.parse(res.toString()),
   );
+
+export const getSearchIndex = async (
+  lang: Language,
+): Promise<Record<string, SearchEntry>> =>
+  readFile(
+    path.join(process.cwd(), 'mdx', `searchIndex.${lang}.json`),
+    'utf-8',
+  ).then((res) => JSON.parse(res.toString()));

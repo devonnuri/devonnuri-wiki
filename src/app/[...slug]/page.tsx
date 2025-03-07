@@ -18,7 +18,7 @@ import remarkToc from 'remark-toc';
 import { getTranslation } from '@/app/i18n';
 import { FALLBACK_LANGUAGE, checkLanguage } from '@/app/i18n/consts';
 import { getEntries } from '@/app/lib/article';
-import customMDXComponents from '@/components/custom-mdx-components';
+import customMDXComponents from '@/components/mdx/custom-mdx-components';
 
 interface Props {
   params: Promise<{

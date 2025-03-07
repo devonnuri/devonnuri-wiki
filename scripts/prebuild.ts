@@ -110,7 +110,13 @@ async function updateAll() {
 
   const folders = await glob('./data/wiki/**/');
   const entries: Record<string, Entry> = {};
-  const searchIndex: Record<string, SearchEntry> = {};
+  const searchIndices: Record<
+    Language,
+    Record<string, SearchEntry>
+  > = LANGUAGES.reduce(
+    (acc, lang) => ({ ...acc, [lang]: {} }),
+    {} as Record<Language, Record<string, SearchEntry>>,
+  );
 
   const recentArticles: Record<Language, Article[]> = LANGUAGES.reduce(
     (acc, lang) => ({ ...acc, [lang]: [] }),
@@ -142,7 +148,7 @@ async function updateAll() {
       );
 
       const content = await readFile(mdxFile, 'utf-8');
-      searchIndex[article.entryId] = {
+      searchIndices[article.language][article.entryId] = {
         id: article.entryId,
         title: article.title,
         content: await sanitizeMdx(content),
@@ -205,11 +211,13 @@ async function updateAll() {
     'utf-8',
   );
 
-  await writeFile(
-    `${process.cwd()}/mdx/searchIndex.json`,
-    JSON.stringify(searchIndex),
-    'utf-8',
-  );
+  for (const lang of LANGUAGES) {
+    await writeFile(
+      `${process.cwd()}/mdx/searchIndex.${lang}.json`,
+      JSON.stringify(searchIndices[lang]),
+      'utf-8',
+    );
+  }
 
   await rimraf('./public/assets/');
 
@@ -254,7 +262,7 @@ async function updateSingle(mdxFile: string) {
   );
 
   const searchIndex = await readFile(
-    path.join(process.cwd(), 'mdx', 'searchIndex.json'),
+    path.join(process.cwd(), 'mdx', `searchIndex.${article.language}.json`),
     'utf-8',
   ).then((res) => JSON.parse(res.toString()));
 
@@ -266,7 +274,7 @@ async function updateSingle(mdxFile: string) {
   };
 
   await writeFile(
-    `${process.cwd()}/mdx/searchIndex.json`,
+    path.join(process.cwd(), 'mdx', `searchIndex.${article.language}.json`),
     JSON.stringify(searchIndex),
     'utf-8',
   );
