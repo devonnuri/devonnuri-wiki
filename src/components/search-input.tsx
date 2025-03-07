@@ -1,6 +1,5 @@
 'use client';
 
-import { TFunction } from 'i18next';
 import { useEffect, useState } from 'react';
 
 import { Language } from '@/app/i18n/consts';
@@ -19,7 +18,7 @@ const SearchInput = ({ language, placeholder }: SearchInputProps) => {
     fetch(`/api/search?lang=${language}&query=${query}`)
       .then((res) => res.json())
       .then((data) => setSearchResults(data));
-  }, [query]);
+  }, [language, query]);
 
   return (
     <div className="relative w-full">
