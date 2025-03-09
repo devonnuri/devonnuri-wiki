@@ -96,7 +96,52 @@ int main() {
 }
 ```
 
-# 240305
+## BOJ 2252 : 줄 세우기 (Gold 3)
+
+- 위상정렬 하면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+
+vector<vector<int>> gph;
+vi topo;
+vector<bool> visited;
+
+void dfs(int x) {
+  if (visited[x]) return;
+  visited[x] = true;
+  for (int y : gph[x])
+    dfs(y);
+  topo.push_back(x);
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m; cin >> n >> m;
+  gph.resize(n + 1);
+  visited.resize(n + 1, false);
+
+  for (int i=0;i<m;i++) {
+    int a, b; cin >> a >> b;
+    gph[a].push_back(b);
+  }
+
+  for (int i=1;i<=n;i++)
+    dfs(i);
+
+  for (auto it=topo.rbegin(); it<topo.rend(); it++)
+    cout << *it << ' ';
+
+  return 0;
+}
+```
+
+# 250305
 
 ## BOJ 1967 : 트리의 지름 (Gold 4)
 
@@ -162,7 +207,7 @@ int main() {
 }
 ```
 
-# 240306
+# 250306
 
 ## BOJ 14442 : 벽 부수고 이동하기 2 (Gold 3)
 
@@ -248,9 +293,8 @@ int main() {
   sieve[0] = sieve[1] = false;
   for (int i=2;i<=(int)sqrt(n);i++) {
     if (!sieve[i]) continue;
-    for (int j=2*i;j<=n;j+=i) {
+    for (int j=i*i;j<=n;j+=i)
       sieve[j] = false;
-    }
   }
 
   vector<ll> psum; psum.reserve(sieve.count()+1);
@@ -398,6 +442,93 @@ int main() {
   }
 
   cout << dfs(1).first;
+  return 0;
+}
+```
+
+## BOJ 15681 : 트리와 쿼리 (Gold 5)
+
+- DFS를 돌리면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+vector<vector<int>> G;
+bitset<100'001> visited;
+vector<int> res;
+
+int dfs(int u) {
+  if (visited[u]) return 0;
+  visited[u] = true;
+
+  int cnt = 1;
+  for (int v : G[u]) {
+    cnt += dfs(v);
+  }
+  return res[u] = cnt;
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int N, R, Q; cin >> N >> R >> Q;
+  G.resize(N+1);
+  res.resize(N+1);
+  for (int i=0;i<N-1;i++) {
+    int u, v; cin >> u >> v;
+    G[u].push_back(v);
+    G[v].push_back(u);
+  }
+
+  dfs(R);
+
+  while (Q--) {
+    int u; cin >> u;
+    cout << res[u] << '\n';
+  }
+
+  return 0;
+}
+```
+
+## BOJ 2805 : 나무 자르기 (Silver 2)
+
+- 이분 탐색 하면 된다.
+- upper bound를 구하면 되는데, 부등호가 여전히 헷갈린다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+using ll = long long;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m; cin >> n >> m;
+  vi h(n);
+
+  for (int i=0;i<n;i++)
+    cin >> h[i];
+
+  int lo = 0, hi = 1'000'000'001;
+  while (lo < hi) {
+    ll sum = 0;
+    int mid = lo + (hi - lo) / 2;
+    for (int i=0;i<n;i++)
+      sum += max(h[i] - mid, 0);
+    if (sum < m)
+      hi = mid;
+    else
+      lo = mid + 1;
+  }
+
+  cout << (lo - 1);
+
   return 0;
 }
 ```

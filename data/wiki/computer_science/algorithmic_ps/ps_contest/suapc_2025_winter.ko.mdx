@@ -30,35 +30,35 @@ typedef tuple<int, int, bool> tiib;
 
 int n;
 string s;
-tiib dfs(int i) { // <ss, len, isLastAccepted>
-  if (s[i] != 's') return make_tuple(0, 1, false);
+tiib dfs(int i) { // <cnt, len, isLastAccepted>
+  if (s[i] != 's') return {0, 1, false};
 
-  int len = 1, ss = 0, j;
+  int len = 1, cnt = 0, j;
   for (j=1; j<5; j++) {
     if (i+len>=n) break;
     if (s[i+len] == "skeep"[j]) {
       len++;
     } else {
       auto [d, len2, accepted] = dfs(i+len);
-      ss += d;
+      cnt += d;
       len += len2;
       if (!accepted) break;
     }
   }
-  return make_tuple(ss + (j == 5), len, j == 5);
+  return {cnt + (j == 5), len, j == 5};
 }
 
 int main() {
   cin >> n >> s;
 
-  int ss=0, i=0;
+  int ans=0, i=0;
   while (i<n-4) {
     auto [x, len, _] = dfs(i);
-    ss += x;
+    ans += x;
     i += len;
   }
 
-  cout << ss;
+  cout << ans;
 
   return 0;
 }
