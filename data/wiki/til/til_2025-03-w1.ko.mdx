@@ -346,5 +346,60 @@ int main() {
 
 - [BOJ 2470](#boj-2470--두-용액-gold-5) 코드로 해결 가능하다.
 
+# 250309
+
+## BOJ 1167 : 트리의 지름 (Gold 2)
+
+- 트리 노드의 부모가 주어지는 게 아니라 Adjacency List가 주어져서 이번에는 BFS가 아니라 DFS만으로 해결해보았다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using pi = pair<int, int>;
+
+vector<vector<pi>> G;
+bitset<100'001> visited;
+
+pi dfs(int u) {
+  if (visited[u]) return {0, -1};
+  visited[u] = true;
+
+  pi maxtwo{0, 0};
+  int mm = 0;
+  for (auto [v, w] : G[u]) {
+    auto [a, b] = dfs(v);
+    if (b == -1) continue;
+    mm = max(mm, a);
+    if (b+w > maxtwo.first) {
+      maxtwo.second = maxtwo.first;
+      maxtwo.first = b+w;
+    } else if (b+w > maxtwo.second) {
+      maxtwo.second = b+w;
+    }
+  }
+
+  return {max(mm, maxtwo.first + maxtwo.second), maxtwo.first};
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int V; cin >> V; G.resize(V+1);
+  for (int i=0;i<V;i++) {
+    int u; cin >> u;
+    int v; cin >> v;
+    while (v != -1) {
+      int w; cin >> w;
+      G[u].emplace_back(v, w);
+      cin >> v;
+    }
+  }
+
+  cout << dfs(1).first;
+  return 0;
+}
+```
 
 [^1]: 똑똑한 독자들은 $a=b<c$인 경우는 고려하지 않느냐고 물을 것이다. 문제에서 용액의 특성값은 모두 다르다고 한 만큼, $a=b$이면 정렬할 때 $(+a,-a,\pm c)$나 $(-a,+a,\pm c)$ 형태가 될 것이고 여기서 무조건 $\pm a + \mp a=0$(복부호동순)이 최소가 됨을 쉽게 알 수 있다.
