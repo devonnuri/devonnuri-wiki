@@ -1,0 +1,40 @@
+---
+title: 2025년 3월 2주차 TIL
+---
+
+# TOC
+
+# 250310
+
+## BOJ 2231 : 분해합 (Bronze 2)
+
+- $N$이 크지 않으므로 브루트포스 하면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  int i;
+  for (i=1;i<=1'000'000;i++) {
+    int j = i;
+    int sum = i;
+    while (j > 0) {
+      sum += j % 10;
+      j /= 10;
+    }
+    if (sum == n) {
+      cout << i;
+      break;
+    }
+  }
+  if (i == 1'000'001)
+    cout << 0;
+
+  return 0;
+}
+```

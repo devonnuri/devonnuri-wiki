@@ -533,4 +533,54 @@ int main() {
 }
 ```
 
+## BOJ 2239 : 스도쿠 (Gold 4)
+
+- 백트래킹으로 풀면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int mat[81];
+
+bool check(int i, int v) {
+  int x = i / 9, y = i % 9;
+  for (int j=0;j<9;j++) {
+    int cellIdx = (x - x%3 + j/3)*9 + (y - y%3 + j%3);
+    if (j != y && mat[x * 9 + j] == v ||
+        j != x && mat[j * 9 + y] == v ||
+        cellIdx != i && mat[cellIdx] == v) return false;
+  }
+  return true;
+}
+
+bool dfs(int i) {
+  if (mat[i] > 0) return dfs(i+1);
+  if (i == 81) return true;
+  for (int v=1;v<=9;v++) {
+    if (check(i, v)) {
+      mat[i] = v;
+      if (dfs(i + 1)) return true;
+      mat[i] = 0;
+    }
+  }
+  return false;
+}
+
+int main() {
+  for (int i=0;i<9;i++)
+    for (int j=0;j<9;j++)
+      scanf("%1d", &mat[i*9+j]);
+
+  dfs(0);
+
+  for (int i=0;i<9;i++) {
+    for (int j=0;j<9;j++)
+      printf("%1d", mat[i*9+j]);
+    printf("\n");
+  }
+  return 0;
+}
+```
+
 [^1]: 똑똑한 독자들은 $a=b<c$인 경우는 고려하지 않느냐고 물을 것이다. 문제에서 용액의 특성값은 모두 다르다고 한 만큼, $a=b$이면 정렬할 때 $(+a,-a,\pm c)$나 $(-a,+a,\pm c)$ 형태가 될 것이고 여기서 무조건 $\pm a + \mp a=0$(복부호동순)이 최소가 됨을 쉽게 알 수 있다.

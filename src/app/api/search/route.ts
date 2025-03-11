@@ -1,3 +1,4 @@
+import Fuse from 'fuse.js';
 import { type NextRequest } from 'next/server';
 
 import { checkLanguage } from '@/app/i18n/consts';
@@ -17,17 +18,21 @@ export async function GET(request: NextRequest) {
   }
 
   const searchIndex = await getSearchIndex(lang);
+  const articles = Object.values(searchIndex);
 
-  const results = Object.values(searchIndex)
-    .filter(
-      (entry) =>
-        entry.title.toLowerCase().includes(query.toLowerCase()) ||
-        entry.content.toLowerCase().includes(query.toLowerCase()),
-    )
-    .map((entry) => ({
-      ...entry,
-      content: entry.content.slice(0, 100),
-    }));
+  const fuse = new Fuse(articles, {
+    keys: ['title', 'content'],
+    threshold: 0.3,
+    includeScore: true,
+  });
+
+  const fuseResults = fuse.search(query).slice(0, 10);
+
+  const results = fuseResults.map((result) => ({
+    ...result.item,
+    score: result.score,
+    content: result.item.content.slice(0, 100),
+  }));
 
   return Response.json(results);
 }
