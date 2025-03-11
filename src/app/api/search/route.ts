@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     keys: ['title', 'content'],
     threshold: 0.3,
     includeScore: true,
+    shouldSort: true,
   });
 
   const fuseResults = fuse.search(query).slice(0, 10);

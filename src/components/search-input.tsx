@@ -10,9 +10,13 @@ interface SearchInputProps {
   placeholder: string;
 }
 
+type SearchResult = SearchEntry & {
+  score: number;
+};
+
 const SearchInput = ({ language, placeholder }: SearchInputProps) => {
   const [query, setQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchEntry[]>([]);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
   useEffect(() => {
     fetch(`/api/search?lang=${language}&query=${query}`)
