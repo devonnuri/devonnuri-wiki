@@ -6,6 +6,7 @@ import localFont from 'next/font/local';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { GoogleAdSense } from '@/components/google-adsense';
 import SearchInput from '@/components/search-input';
 
 import './globals.css';
@@ -116,6 +117,7 @@ export default async function RootLayout({
           </div>
         </div>
       </body>
+      <GoogleAdSense />
     </html>
   );
 }
