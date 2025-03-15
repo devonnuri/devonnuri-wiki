@@ -38,3 +38,396 @@ int main() {
   return 0;
 }
 ```
+
+# 250315
+
+## BOJ 15829 : Hashing (Bronze 2)
+
+- 하라는 대로 하면 된다.
+- 만약 $L$이 많이 컸다면 Binary Exponentiation을 사용했을 것 같다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n;
+  string s;
+  cin >> n >> s;
+  const int r = 31, m = 1234567891;
+  ll ans = 0;
+  for (int i=0;i<n;i++) {
+    ll a = s[i] - 'a' + 1;
+    for (int j=0;j<i;j++)
+      a = (a * r) % m;
+    ans = (ans + a) % m;
+  }
+  cout << ans;
+
+  return 0;
+}
+```
+
+## BOJ 17219 : 비밀번호 찾기 (Silver 4)
+
+- `std::map`을 사용하면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m; cin >> n >> m;
+  map<string, string> pass_map;
+  for (int i=0;i<n;i++) {
+    char addr[21], pass[21];
+    cin >> addr >> pass;
+    pass_map[addr] = pass;
+  }
+
+  for (int i=0;i<m;i++) {
+    char addr[21];
+    cin >> addr;
+    cout << pass_map[addr] << '\n';
+  }
+
+  return 0;
+}
+```
+
+## BOJ 9251 : LCS (Gold 5) [재해결]
+
+- 원래는 top-down으로 풀고 memoization으로 해결했지만, LCS 2 문제를 풀기에 적절하지 않은 방법인 것 같아서, bottom-up으로 해결할 수 있는 방법을 모색해봤다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int dp[1001][1001] = {0, };
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  string s1, s2; cin >> s1 >> s2;
+  for (int i=1;i<=s1.length();i++) {
+    for (int j=1;j<=s2.length();j++) {
+      if (s1[i-1] == s2[j-1])
+        dp[i][j] = dp[i-1][j-1] + 1;
+      else
+        dp[i][j] = max(dp[i][j-1], dp[i-1][j]);
+    }
+  }
+
+  cout << dp[s1.length()][s2.length()];
+
+  return 0;
+}
+```
+
+## BOJ 9252 : LCS 2 (Gold 4)
+
+- 직전에 풀었던 방법을 응용해서 풀었다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using pi = pair<int, int>;
+
+int dp[1001][1001] = {0, };
+pi last[1001][1001] = {};
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  string s1, s2; cin >> s1 >> s2;
+  int l1 = s1.length(), l2 = s2.length();
+  for (int i=1;i<=l1;i++) {
+    for (int j=1;j<=l2;j++) {
+      if (s1[i-1] == s2[j-1]) {
+        dp[i][j] = dp[i-1][j-1] + 1;
+        last[i][j] = {i-1, j-1};
+      } else {
+        if (dp[i][j-1] > dp[i-1][j]) {
+          last[i][j] = {i, j-1};
+          dp[i][j] = dp[i][j-1];
+        } else {
+          last[i][j] = {i-1, j};
+          dp[i][j] = dp[i-1][j];
+        }
+      }
+    }
+  }
+
+  cout << dp[l1][l2] << '\n';
+
+  string ans;
+  pi cur = {l1, l2};
+  while (dp[cur.first][cur.second] > 0) {
+    if (s1[cur.first-1] == s2[cur.second-1])
+      ans.insert(ans.begin(), s1[cur.first-1]);
+    cur = last[cur.first][cur.second];
+  }
+
+  cout << ans;
+
+  return 0;
+}
+```
+
+## BOJ 1629 : 곱셈 (Silver 1) [재해결]
+
+- 원래 파이썬 `pow`로 날먹했었다...;;
+- 재귀를 이용한 Binary Exponentiation으로 풀었다.
+
+  ```cpp
+  #include <bits/stdc++.h>
+  using namespace std;
+
+  using ll = long long;
+
+  ll binpow(ll a, ll b, ll c) {
+    if (b == 0) return 1;
+    ll res = binpow(a, b / 2, c);
+    if (b % 2) return (res * res % c) * a % c;
+    return res * res % c;
+  }
+
+  int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int a, b, c; cin >> a >> b >> c;
+    cout << binpow(a, b, c);
+
+    return 0;
+  }
+  ```
+
+- 이거는 재귀 없는 버전
+
+  ```cpp
+  #include <bits/stdc++.h>
+  using namespace std;
+
+  using ll = long long;
+
+  ll binpow(ll a, ll b, ll c) {
+    ll res = 1;
+    ll tmp = a;
+    while (b > 0) {
+      if (b % 2)
+        res = res * tmp % c;
+      b /= 2;
+      tmp = tmp * tmp % c;
+    }
+    return res;
+  }
+
+  int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    ll a, b, c; cin >> a >> b >> c;
+    cout << binpow(a, b, c);
+
+    return 0;
+  }
+  ```
+
+## BOJ 10830 : 행렬 제곱 (Gold 4)
+
+- 위에 Binary Exponentiation 문제를 푼 이유는 이 문제를 풀기 위함이다.
+- 선형대수 공부를 따로 해야겠다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+
+template<class T> struct Matrix {
+  typedef Matrix M;
+  int N;
+  array<array<T, 5>, 5> d{};
+  Matrix(int N) {
+    this->N = N;
+  }
+  M operator*(const M& m) const {
+    M a(N);
+    for (int i=0;i<N;i++)
+      for (int j=0;j<N;j++)
+        for (int k=0;k<N;k++)
+          a.d[i][j] += d[i][k]*m.d[k][j];
+    return a;
+  }
+  M operator%(T mod) {
+    M a(N);
+    for (int i=0;i<N;i++)
+      for (int j=0;j<N;j++)
+        a.d[i][j] = d[i][j] % mod;
+    return a;
+  }
+  M pow(T p, T mod) {
+    M res(N);
+    M tmp(*this);
+    for (int i=0;i<N;i++) res.d[i][i] = 1;
+    while (p > 0) {
+      if (p&1) res = res * tmp % mod;
+      tmp = tmp * tmp % mod;
+      p >>= 1;
+    }
+    return res;
+  }
+};
+
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n;
+  ll b;
+  cin >> n >> b;
+  Matrix<ll> mat(n);
+  for (int i=0;i<n;i++) {
+    for (int j=0;j<n;j++) {
+      ll x; cin >> x;
+      mat.d[i][j] = x;
+    }
+  }
+
+  auto ans = mat.pow(b, 1000);
+  for (int i=0;i<n;i++) {
+    for (int j=0;j<n;j++) {
+      cout << ans.d[i][j] << ' ';
+    }
+    cout << '\n';
+  }
+
+  return 0;
+}
+```
+
+## BOJ 2749 : 피보나치 수 3 (Gold 2)
+
+<Theorem title="방법" subtitle="선형재귀를 행렬곱으로 나타내기">
+  - 다음 차수가 $k$인 선형재귀를 행렬곱으로 나타낼 것이다.
+    $$
+    a_n = c_1 a_{n-1} + c_2 a_{n-2} + \cdots + c_k a_{n-k}
+    $$
+  - 연속하는 $k$개의 항으로 이루어진 상태 벡터를 만들어보자.
+    $$
+    \mathbf{v}_n = \begin{pmatrix} a_n \\ a_{n-1} \\ \vdots \\ a_{n-k+1} \end{pmatrix}.
+    $$
+  - 다음 상태 벡터를 계산해주는 $k \times k$의 행렬을 만들어보자.
+    $$
+    A = \begin{pmatrix}
+    c_1 & c_2 & c_3 & \cdots & c_{k-1} & c_k \\
+    1   & 0   & 0   & \cdots & 0       & 0 \\
+    0   & 1   & 0   & \cdots & 0       & 0 \\
+    \vdots & \vdots & \ddots & \vdots & \vdots & \vdots \\
+    0   & 0   & \cdots & 1       & 0
+    \end{pmatrix}.
+    $$
+
+    - 행렬의 맨 첫 행은 상태 벡터의 항들에 계수를 곱해주는 역할을 하며, 나머지 행은 상태 벡터의 각 항을 한 칸씩 뒤로 밀어주는 역할을 한다.
+  - 이제 다음을 만족한다.
+    $$
+    \mathbf{v}_n = A \mathbf{v}_{n-1}.
+    $$
+  - 위 규칙을 여러 번 적용하면 다음의 결과를 얻는다.
+    $$
+    \mathbf{v}_n = A^n \mathbf{v}_0.
+    $$
+  - 이제 $A_n$은 binary exponentiation으로 $O(\log n)$에 구해주면 된다.
+  - 전체 복잡도는 $O(k^3\log n)$이 된다.
+</Theorem>
+
+- 위의 방법으로 풀면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+
+template<class T, int N> struct Matrix {
+  typedef Matrix M;
+  array<array<T, 2>, 2> d{};
+  M operator*(const M& m) const {
+    M a;
+    for (int i=0;i<N;i++)
+      for (int j=0;j<N;j++)
+        for (int k=0;k<N;k++)
+          a.d[i][j] += d[i][k]*m.d[k][j];
+    return a;
+  }
+  M operator%(T mod) {
+    M a;
+    for (int i=0;i<N;i++)
+      for (int j=0;j<N;j++)
+        a.d[i][j] = d[i][j] % mod;
+    return a;
+  }
+  M pow(T p, T mod) {
+    M res;
+    M tmp(*this);
+    for (int i=0;i<N;i++) res.d[i][i] = 1;
+    while (p > 0) {
+      if (p&1) res = res * tmp % mod;
+      tmp = tmp * tmp % mod;
+      p >>= 1;
+    }
+    return res;
+  }
+};
+
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  ll n;
+  cin >> n;
+
+  Matrix<ll, 2> mat;
+  mat.d[0][0] = 1;
+  mat.d[0][1] = 1;
+  mat.d[1][0] = 1;
+  mat.d[1][1] = 0;
+
+  auto res = mat.pow(n, 1'000'000);
+
+  cout << res.d[0][1];
+
+  return 0;
+}
+```
+
+## BOJ 10826 : 피보나치 수 4 (Silver 5)
+
+- BigInt 구현이 필요하다. 근데 그게 내장되어 있는 파이썬을 사용하자.
+
+```py
+n = int(input())
+if n == 0:
+  print(0)
+else:
+  a, b = [0, 1]
+  for _ in range(n-1):
+    tmp = b
+    b += a
+    a = tmp
+  print(b)
+```
