@@ -33,6 +33,17 @@ function stripHtml() {
   };
 }
 
+function removeFrontmatter() {
+  return (tree: Node) => {
+    visit(tree, (node: Node, index?: number, parent?: Parent) => {
+      if (node.type === 'yaml') {
+        parent?.children.splice(index!, 1);
+        return [SKIP, index];
+      }
+    });
+  };
+}
+
 export async function sanitizeMdx(mdxContent: string): Promise<string> {
   const file = await unified()
     .use(remarkParse)
@@ -40,6 +51,7 @@ export async function sanitizeMdx(mdxContent: string): Promise<string> {
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
     .use(stripHtml)
+    .use(removeFrontmatter)
     .use(rehypeStringify)
     .process(mdxContent);
 
