@@ -1,0 +1,299 @@
+---
+title: 2025년 3월 3주차 TIL
+---
+
+# TOC
+
+# 250317
+
+## BOJ 1005 : ACM Craft (Gold 3)
+
+- DFS를 한번 돌려서 indegree를 조사하고 priority queue를 써서 BFS를 돌려서 해결했다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using pi = pair<int, int>;
+
+void dfs(vector<vector<int>> &G, vector<int> &indeg, vector<bool> &visited, int n, int u) {
+  if (visited[u]) return;
+  visited[u] = true;
+  for (int v : G[u]) {
+    indeg[v]++;
+    dfs(G, indeg, visited, n, v);
+  }
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int T; cin >> T;
+  while (T--) {
+    int n, k; cin >> n >> k;
+    vector<int> delay(n+1);
+    for (int i=1;i<=n;i++)
+      cin >> delay[i];
+    vector<vector<int>> G(n+1);
+    for (int i=0;i<k;i++) {
+      int x, y; cin >> x >> y;
+      G[y].push_back(x); // reversed
+    }
+    int w; cin >> w;
+    vector<int> indeg(n+1,0);
+    vector<bool> visited(n+1,false);
+    dfs(G, indeg, visited, n, w);
+    priority_queue<pi, vector<pi>, greater<>> q; // (time, node)
+    vector<int> visit_cnt(n+1,0); // in-degree
+    q.emplace(delay[w], w);
+    int ans = -1;
+    while (!q.empty()) {
+      auto [t, u] = q.top(); q.pop();
+      visit_cnt[u]++;
+      if (visit_cnt[u] < indeg[u])
+        continue;
+      ans = max(ans, t);
+      for (int v : G[u]) {
+        q.emplace(t + delay[v], v);
+      }
+    }
+    cout << ans << '\n';
+  }
+
+  return 0;
+}
+```
+
+- 위상정렬과 DP로 해결할 수 있는 모양이다.
+
+# 250318
+
+## 정수론 공부
+
+- 정수론 지식이 부족하다고 생각해서 [KMO 바이블 정수론 편](https://product.kyobobook.co.kr/detail/S000001921840)을 샀다.
+- 근데 너무 어렵다... 지능이 부족하다...
+
+# 250321
+
+## BOJ 14503 : 로봇 청소기 (Gold 5)
+
+- 단순한 구현 문제다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int D[4][2] = {{-1, 0}, {0, 1}, {1, 0}, {0, -1}};
+bool wall[50][50] = {false, }, clean[50][50] = {false, };
+int n, m;
+
+bool not_wall(int r, int c) {
+  return r>=0 && r<n && c>=0 && c<m && !wall[r][c];
+}
+
+bool not_clean(int r, int c) {
+  return not_wall(r, c) && !clean[r][c];
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  cin >> n >> m;
+  int r, c, d; cin >> r >> c >> d;
+
+  for (int i=0;i<n;i++)
+    for (int j=0;j<m;j++)
+      cin >> wall[i][j];
+
+  int cnt = 0;
+  while (true) {
+    if (!clean[r][c]) {
+      clean[r][c] = true;
+      cnt++;
+    }
+
+    bool found = false;
+    for (auto [dr, dc] : D) {
+      if (not_clean(r+dr, c+dc)) {
+        found = true;
+      }
+    }
+    if (found) {
+      d = (d + 3) % 4;
+      auto [dr, dc] = D[d];
+      if (not_clean(r+dr, c+dc)) {
+        r += dr; c += dc;
+      }
+    } else {
+      auto [dr, dc] = D[(d + 2) % 4];
+      if (not_wall(r+dr, c+dc)) {
+        r += dr; c += dc;
+      } else {
+        break;
+      }
+    }
+  }
+  cout << cnt;
+
+  return 0;
+}
+```
+
+## BOJ 17070 : 파이프 옮기기 (Gold 5)
+
+- 제약이 많긴 한데 그냥 꼼꼼히 신경써서 풀면 되는 3D DP 문제다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+bool wall[16][16];
+int dp[16][16][3] = {0, };
+int n;
+
+// d = 0:- 1:\ 2:|
+int dfs(int i, int j, int d) {
+  if (i == n-1 && j == n-1) return 1;
+  if (dp[i][j][d] != 0) return dp[i][j][d];
+  int res = 0;
+  if (i+1<n && !wall[i+1][j] && d != 0) res += dfs(i+1,j,2);
+  if (j+1<n && !wall[i][j+1] && d != 2) res += dfs(i,j+1,0);
+  if (i+1<n && j+1<n && !wall[i+1][j] && !wall[i][j+1] && !wall[i+1][j+1])
+    res += dfs(i+1,j+1,1);
+  return dp[i][j][d] = res;
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  cin >> n;
+  for (int i=0;i<n;i++)
+    for (int j=0;j<n;j++)
+      cin >> wall[i][j];
+
+  cout << dfs(0,1,0);
+
+  return 0;
+}
+```
+
+## BOJ 1043 : 거짓말 (Gold 4)
+
+- 문제 상황이 너무 곤란하다. ㅋㅋ.. 다들 거짓말은 하지 않길
+- 전염되는 상황이 disjoint set 쓰면 되겠다 싶었다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+
+struct DisjointSet {
+  vi parent;
+  DisjointSet(int n) : parent(n) {
+    for (int i=0;i<n;i++)
+      parent[i] = i;
+  }
+
+  int find(int u) {
+    if (u == parent[u]) return u;
+    return parent[u] = find(parent[u]);
+  }
+
+  void merge(int u, int v) {
+    u = find(u); v = find(v);
+    if (u == v) return;
+    parent[v] = u;
+  }
+};
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m; cin >> n >> m;
+  DisjointSet ds(n+1);
+  vector<vi> meet(m);
+
+  int truths; cin >> truths;
+  for (int i=0;i<truths;i++) {
+    int truth; cin >> truth;
+    ds.merge(0, truth);
+  }
+
+  for (int i=0;i<m;i++) {
+    int cnt; cin >> cnt;
+    meet[i].reserve(cnt);
+    int prev = -1;
+    for (int j=0;j<cnt;j++) {
+      int mem; cin >> mem;
+      meet[i].push_back(mem);
+      if (prev != -1)
+        ds.merge(prev, mem);
+      prev = mem;
+    }
+  }
+
+  int truthSet = ds.find(0);
+  int ans = 0;
+  for (int i=0;i<m;i++) {
+    bool okay = true;
+    for (int j : meet[i]) {
+      if (ds.find(j) == truthSet) {
+        okay = false;
+        break;
+      }
+    }
+    if (okay) ans++;
+  }
+
+  cout << ans;
+
+  return 0;
+}
+```
+
+## BOJ 7869 : 두 원 (Gold 2)
+
+- 전에 풀어 뒀었는데, 맞왜틀 하길래 보니까 셋째자리까지 출력하라고 하면 뒤의 trailing zero까지 붙여주어야 하는 것이었다...
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+  double x1, y1, r1, x2, y2, r2;
+  scanf("%lf%lf%lf%lf%lf%lf", &x1, &y1, &r1, &x2, &y2, &r2);
+
+  double d_sq = (x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2);
+
+  if (d_sq >= (r1 + r2) * (r1 + r2)) {
+    printf("%.3f", 0);
+    return 0;
+  }
+  if (d_sq <= (r1 - r2) * (r1 - r2)) {
+    double mr = min(r1, r2);
+    double area = M_PI * mr * mr;
+    printf("%.3f", area);
+    return 0;
+  }
+
+  double cos_theta1_half = (d_sq + r1 * r1 - r2 * r2) / (2 * sqrt(d_sq) * r1);
+  double cos_theta2_half = (d_sq + r2 * r2 - r1 * r1) / (2 * sqrt(d_sq) * r2);
+
+  double theta1_half = acos(cos_theta1_half);
+  double theta2_half = acos(cos_theta2_half);
+
+  double sin_theta1 = sin(theta1_half * 2);
+  double sin_theta2 = sin(theta2_half * 2);
+
+  double area = r1*r1*(theta1_half*2-sin_theta1)/2 + r2*r2*(theta2_half*2-sin_theta2)/2;
+
+  printf("%.3f", area);
+
+  return 0;
+}
+```
