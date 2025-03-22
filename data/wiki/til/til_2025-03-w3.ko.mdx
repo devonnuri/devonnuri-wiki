@@ -297,3 +297,94 @@ int main() {
   return 0;
 }
 ```
+
+# 250322
+
+## BOJ 17404 : RGB거리 2 (Gold 4)
+
+- 3D DP 문제다.
+- 처음에는 연속된 두 집의 색이 달라야 하는 줄 알았다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+const int INF = numeric_limits<int>::max();
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  vector<array<int, 3>> cost(n);
+  vector<array<array<int, 3>, 3>> dp(n); // dp[idx][color at 0][color at idx]
+  for (int i=0;i<n;i++) {
+    int r,g,b; cin >> r >> g >> b;
+    cost[i] = {r, g, b};
+  }
+
+  dp[0][0] = {cost[0][0], INF, INF};
+  dp[0][1] = {INF, cost[0][1], INF};
+  dp[0][2] = {INF, INF, cost[0][2]};
+  for (int i=1;i<n;i++) { // idx
+    for (int j=0;j<3;j++) { // color at 0
+      for (int k=0;k<3;k++) { // color at idx
+        int m = INF;
+        if (i != n-1 || k != j) {
+          for (int l=0; l<3; l++) { // prev color
+            if (l == k) continue;
+            m = min(m, dp[i-1][j][l]);
+          }
+        }
+        dp[i][j][k] = m == INF ? INF : m + cost[i][k];
+      }
+    }
+  }
+
+  int ans = INF;
+  for (int j=0;j<3;j++)
+    for (int k=0;k<3;k++)
+      ans = min(ans, dp[n-1][j][k]);
+
+  cout << ans;
+
+  return 0;
+}
+```
+
+## BOJ 10986 : 나머지 합 (Gold 3)
+
+- 나머지를 누적합하는 문제다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+
+ll cnt[1000] = {0, };
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m; cin >> n >> m;
+
+  int sum = 0;
+  ll ans = 0;
+  for (int i=0;i<n;i++) {
+    int x; cin >> x;
+    sum = (sum + x) % m;
+    if (sum == 0) {
+      ans += cnt[sum] + 1;
+    } else {
+      ans += cnt[sum];
+    }
+    cnt[sum]++;
+  }
+
+  cout << ans;
+
+  return 0;
+}
+```
