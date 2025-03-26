@@ -1,0 +1,206 @@
+---
+title: 2025년 3월 4주차 TIL
+---
+
+# TOC
+
+# 250324
+
+- 단계별로 풀어보기를 단계별로 뿌셔볼 예정이다.
+
+## BOJ 25304 : 영수증 (Bronze 4)
+
+```py
+x = int(input())
+n = int(input())
+for _ in range(n):
+    a, b = map(int, input().split())
+    x -= a * b
+print('Yes' if x == 0 else 'No')
+```
+
+## BOJ 25314 : 코딩은 체육과목 입니다 (Bronze 5)
+
+```py
+print('long '*(int(input())//4)+'int')
+```
+
+- 이로써 3단계 '반복문'을 뿌수는 데 성공했다.
+
+## BOJ 10810 : 공 넣기 (Bronze 3)
+
+```py
+n, m = map(int, input().split())
+arr = [0] * (n + 1)
+for _ in range(m):
+    i, j, k = map(int, input().split())
+    for l in range(i, j+1):
+        arr[l] = k
+for i in range(1, n+1):
+    print(arr[i], end=' ')
+```
+
+## BOJ 10813 : 공 바꾸기 (Bronze 2)
+
+```py
+n, m = map(int, input().split())
+arr = list(range(n+1))
+for _ in range(m):
+    i, j = map(int, input().split())
+    arr[i], arr[j] = arr[j], arr[i]
+for i in range(1, n+1):
+    print(arr[i], end=' ')
+```
+
+## BOJ 10811 : 바구니 뒤집기 (Bronze 2)
+
+```py
+n, m = map(int, input().split())
+arr = list(range(n+1))
+for _ in range(m):
+    i, j = map(int, input().split())
+    arr[i:j+1] = reversed(arr[i:j+1])
+for i in range(1, n+1):
+    print(arr[i], end=' ')
+```
+
+- 이로써 4단계 '1차원 배열'을 뿌수는 데 성공했다.
+
+## BOJ 25206 : 너의 평점은 (Silver 5)
+
+```py
+s = 0
+l = ['F', 'X', 'D0', 'D+', 'C0', 'C+', 'B0', 'B+', 'A0', 'A+']
+n = 0
+for i in range(20):
+    a, b, c = input().split()
+    if c == 'P':
+        continue
+    n += float(b)
+    s += float(b) * l.index(c) / 2
+print(s / n)
+```
+
+- 이로써 6단계 '심화 1'을 뿌수는 데 성공했다.
+- 앞부분 너무 시시해서 못 풀겠다... 뒤로 좀 넘어가자.
+
+## BOJ 1520 : 내리막길 (Gold 3)
+
+- 위상정렬로 DP 순서를 맞춰놓고 DP를 돌렸다.
+- 그러나 굳이 in-degree을 구해서 비교하지 않아도 높이로 비교를 하면 되기에 priority_queue를 사용하면 되었다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using pi = pair<int, int>;
+
+int m, n;
+int h[500][500];
+int dp[500][500];
+vector<pi> topo;
+bool visited[500][500] = {false, };
+const int D[4][2] = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}};
+map<pi, vector<pi>> G;
+
+void dfs(int i, int j) {
+  if (visited[i][j]) return;
+  visited[i][j] = true;
+
+  for (auto [di, dj] : D) {
+    if (i+di>=0 && i+di<m && j+dj>=0 && j+dj<n && h[i][j] > h[i+di][j+dj]) {
+      G[{i, j}].emplace_back(i+di, j+dj);
+      dfs(i+di, j+dj);
+    }
+  }
+  topo.insert(topo.begin(), {i, j});
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  cin >> m >> n;
+  for (int i=0;i<m;i++)
+    for (int j=0;j<n;j++)
+      cin >> h[i][j];
+
+  dfs(0, 0);
+
+  dp[0][0] = 1;
+  for (auto [i, j] : topo)
+    for (auto [k, l] : G[{i, j}])
+      dp[k][l] += dp[i][j];
+
+  cout << dp[m-1][n-1];
+
+  return 0;
+}
+```
+
+# 250326
+
+## BOJ 9466 : 텀 프로젝트 (Gold 3)
+
+- 사이클을 찾아야 한다!
+- out-degree가 1이므로, 각 요소<sub>component</sub>에는 최대 1개의 사이클을 가질 수 있음을 알 수 있다.
+- 그러니까 어느 노드를 기준으로 DFS를 돌리던 간에, 항상 사이클을 찾을 수 밖에 없다.
+- 사이클에 포함된 노드를 찾는 것이 빡셀 수 있는데 사이클을 거꾸로 돌아오면서 처음 사이클을 마주친 노드에 되돌아 왔을 때까지의 노드들을 조사하면 된다.
+  - 처음에는 스택을 따로 만들어야 하나 싶었는데 함수 스택을 사용하면 되겠다 싶었다.
+- 한 요소 내에 부분적으로 노드를 방문하는 경우가 있지만, 같은 요소의 재방문을 피해야 한다. 이 점만 유의해서 코드를 작성하면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+
+int dfs(vi &G, vector<bool> &visited, vi &okay, int u) {
+  visited[u] = true;
+
+  int v = G[u];
+  if (okay[v] != 0) { // already checked
+    okay[u] = -1;
+    return -1;
+  }
+  if (visited[v]) {
+    okay[u] = 1;
+    return u == v ? -1 : v;
+  }
+  int d = dfs(G, visited, okay, v);
+  if (d != -1) {
+    okay[u] = 1;
+    return d == u ? -1 : d;
+  }
+  okay[u] = -1;
+  return -1;
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int T; cin >> T;
+  while (T--) {
+    int n; cin >> n;
+    vi G(n+1);
+    vector<bool> visited(n+1, false);
+    vi okay(n+1, 0); // 0 : unknown, 1 : okay, -1 : not okay
+    for (int u=1;u<=n;u++) {
+      int v; cin >> v;
+      G[u] = v;
+    }
+    for (int u=1;u<=n;u++) {
+      if (!visited[u]) {
+        dfs(G, visited, okay, u);
+      }
+    }
+    int ans = 0;
+    for (int u=1;u<=n;u++)
+      ans += okay[u] != 1;
+    cout << ans << '\n';
+  }
+
+  return 0;
+}
+```
