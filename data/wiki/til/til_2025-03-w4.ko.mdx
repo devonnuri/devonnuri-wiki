@@ -204,3 +204,248 @@ int main() {
   return 0;
 }
 ```
+
+## BOJ 2623 : 음악프로그램 (Gold 3)
+
+- 그냥 위상정렬 해주면 된다고 생각했다.
+- 근데 사이클 검사해주는 게 생각보다 빡셌다.
+- 모든 edge에 대해 위상정렬 순서(`tout`)와 반대되는 게 있으면 사이클이 있다고 판단했다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+using vb = vector<bool>;
+using pi = pair<int, int>;
+
+vi topo;
+vector<vi> G;
+vb visited;
+vi tout;
+int timer = 0;
+void dfs(int u) {
+  if (visited[u]) return;
+  visited[u] = true;
+
+  for (int v : G[u]) {
+    dfs(v);
+  }
+  topo.insert(topo.begin(), u);
+  tout[u] = min(tout[u], timer++);
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m; cin >> n >> m;
+  G.resize(n+1);
+  vector<pi> E;
+  visited.resize(n+1,false);
+  tout.resize(n+1, 1'000'000);
+  for (int i=0;i<m;i++) {
+    int k; cin >> k;
+    int prev = -1;
+    for (int j=0;j<k;j++) {
+      int u; cin >> u;
+      if (prev != -1) {
+        G[prev].push_back(u);
+        E.emplace_back(prev, u);
+      }
+      prev = u;
+    }
+  }
+
+  for (int u=1;u<=n;u++)
+    dfs(u);
+
+  for (auto [u, v] : E) {
+    if (tout[u] < tout[v]) {
+      cout << 0;
+      return 0;
+    }
+  }
+
+  for (int u : topo)
+    cout << u << '\n';
+
+  return 0;
+}
+```
+
+# 250328
+
+## BOJ 1647 : 도시 분할 계획 (Gold 4)
+
+- 크루스칼 알고리즘인데 가중치 하위 $(n-2)$개만 고르면 된다는 사실을 쉽게 알 수 있다.
+- 그냥 Disjoint Set으로 구현하려고 했는데, rank를 추가해주어야 TLE 없이 해결할 수 있다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+using vi = vector<int>;
+using vb = vector<bool>;
+using pi = pair<int, int>;
+
+struct DisjointSet {
+  vi parent, rank;
+
+  DisjointSet(int n) {
+    parent.resize(n+1);
+    rank.resize(n+1,1);
+    for (int i=0;i<=n;i++)
+      parent[i]=i;
+  }
+
+  int find(int x) {
+    if (parent[x] == x) return x;
+    return find(parent[x]);
+  }
+
+  void merge(int x, int y) {
+    x=find(x), y=find(y);
+    if (rank[x]>rank[y]) swap(x,y);
+    parent[x]=y;
+    rank[y]+=rank[x];
+  }
+};
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m; cin >> n >> m;
+  vector<tuple<int, int, int>> edges(m);
+  for (int i=0;i<m;i++) {
+    int a, b, c; cin >> a >> b >> c;
+    edges[i] = {c, a, b};
+  }
+  sort(edges.begin(), edges.end());
+  DisjointSet ds(n);
+  int cnt=0, i=0, sum=0;
+  while (cnt<n-2) {
+    auto [c, a, b] = edges[i];
+    if (ds.find(a) != ds.find(b)) {
+      ds.merge(a, b);
+      cnt++;
+      sum += c;
+    }
+    i++;
+  }
+  cout << sum;
+
+  return 0;
+}
+```
+
+## BOJ 9527 : 1의 개수 (Gold 2)
+
+- 다음 수열을 함께 보자.
+
+  $$
+  \begin{align}
+  \texttt{1}&\\
+  \texttt{10}&\\
+  \texttt{11}&\\
+  \texttt{100}&\\
+  \texttt{101}&\\
+  \texttt{110}&\\
+  \texttt{111}&\\
+  \texttt{1000}&\\
+  \texttt{1001}&\\
+  \texttt{1010}&\\
+  \vdots&
+  \end{align}
+  $$
+
+- $k$ ($k=0,\,1,\,\cdots$)번째 자리수의 합을 유심히 살펴보면 다음 식이 떠오른다. (일종의 더블 카운팅이다.)
+
+  $$
+  \left\lfloor \frac{a}{2^{k+1}} \right\rfloor \times 2^k + \min(a \text{ mod } 2^{k+1}, 2^k)
+  $$
+
+  - 여기서 $a$는 $k$번째 자리수를 갖는 $A$ 이하의 자연수의 개수를 의미한다.
+
+- 위의 발견대로 구현하면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+
+ll sum_f(ll a) {
+  ll d=1, res=0;
+  while (a>0) {
+    res+=a/(2*d)*d+min(a%(2*d),d);
+    a-=d;
+    d<<=1;
+  }
+  return res;
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  ll a, b; cin >> a >> b;
+  cout << sum_f(b) - sum_f(a-1);
+
+  return 0;
+}
+```
+
+## BOJ 1202 : 보석 도둑 (Gold 2)
+
+- 작은 가방부터 그 가방이 넣을 수 있는 보석들 중 가장 비싼 보석을 넣어주면 된다. 다음 그림을 참고하자.
+
+  ![image](/assets/boj-1202.svg)
+
+- Binary Search Tree를 위해 `multiset`을 사용하면 된다. 처음에 `set`을 사용했다가 왜 틀렸는지 한참 해맸다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+using vi = vector<int>;
+using vb = vector<bool>;
+using pi = pair<int, int>;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, k; cin >> n >> k;
+  vector<pi> MV(n);
+  for (int i=0;i<n;i++) {
+    int m, v; cin >> m >> v;
+    MV[i] = {m, v};
+  }
+  sort(MV.begin(), MV.end());
+
+  vi C(k);
+  for (int i=0;i<k;i++)
+    cin >> C[i];
+  sort(C.begin(), C.end());
+
+  multiset<pi, greater<>> s;
+  int idx=0;
+  ll ans=0;
+  for (auto c : C) {
+    for (;idx<n && MV[idx].first<=c;idx++) {
+      auto [m, v] = MV[idx];
+      s.insert({v, m});
+    }
+    if (s.empty()) continue;
+    ans += (*s.begin()).first;
+    s.erase(s.begin());
+  }
+  cout << ans;
+
+  return 0;
+}
+```
