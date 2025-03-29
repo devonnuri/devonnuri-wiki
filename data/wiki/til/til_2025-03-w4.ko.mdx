@@ -449,3 +449,192 @@ int main() {
   return 0;
 }
 ```
+
+- 이로써 solved.ac CLASS 5를 취득했다.
+
+# 250329
+
+### BOJ 1918 : 후위 표기식 (Gold 2)
+
+- AST를 만들고 post-order로 순회하면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+
+struct Node {
+  Node *left=nullptr, *right=nullptr;
+  char val='\0'; // +-*/ or A-Z
+  int start=-1, end=-1;
+};
+
+vector<Node*> nodes;
+
+Node* ast(string const& s, int start, int end) { // [start, end]
+  vector<Node> operands;
+  vi operators;
+  int paren_idx=-1;
+  int paren_cnt=0;
+  for (int i=start;i<=end;i++) {
+    char ch=s[i];
+    if (paren_cnt>0) {
+      if (ch=='(') {
+        paren_cnt++;
+      } else if (ch==')') { // ch==')' -> paren_idx>=0. otherwise, bad expression
+        paren_cnt--;
+        if (paren_cnt == 0) {
+          operands.push_back({.start=paren_idx+1, .end=i-1});
+        }
+      }
+      continue;
+    }
+    if (ch=='(') {
+      paren_cnt++;
+      paren_idx = i;
+    } else if (ch=='+'||ch=='-'||ch=='*'||ch=='/') {
+      operators.push_back(i);
+    } else { // alphabet
+      operands.push_back({.val=ch, .start=i, .end=i});
+    }
+  }
+  // mul, div -> node
+  for (int i=0;i<operators.size();i++) {
+    if (s[operators[i]]=='*'||s[operators[i]]=='/') {
+      Node *left, *right;
+      if (operands[i].val == '\0') {
+        left = ast(s, operands[i].start, operands[i].end);
+      } else {
+        left = new Node;
+        *left = operands[i];
+        nodes.push_back(left);
+      }
+      if (operands[i+1].val == '\0') {
+        right = ast(s, operands[i+1].start, operands[i+1].end);
+      } else {
+        right = new Node;
+        *right = operands[i+1];
+        nodes.push_back(right);
+      }
+      operands.erase(operands.begin()+i, operands.begin()+i+2);
+      operands.insert(operands.begin()+i, {.left=left, .right=right, .val=s[operators[i]]});
+      operators.erase(operators.begin()+i);
+      i--;
+    }
+  }
+  if (operators.empty()) {
+    if (operands[0].val == '\0')
+      return ast(s, operands[0].start, operands[0].end);
+
+    Node *root = new Node;
+    *root = operands[0];
+    nodes.push_back(root);
+    return root;
+  }
+  Node *root;
+  for (int i=0;i<operators.size();i++) {
+    if (i == 0) {
+      Node *left, *right;
+      root = new Node;
+      if (operands[i].val == '\0') {
+        left = ast(s, operands[i].start, operands[i].end);
+      } else {
+        left = new Node;
+        *left = operands[i];
+        nodes.push_back(left);
+      }
+      if (operands[i+1].val == '\0') {
+        right = ast(s, operands[i+1].start, operands[i+1].end);
+      } else {
+        right = new Node;
+        *right = operands[i+1];
+        nodes.push_back(right);
+      }
+      root->val = s[operators[i]];
+      root->left = left;
+      root->right = right;
+    } else {
+      Node *new_root = new Node, *right;
+      if (operands[i+1].val == '\0') {
+        right = ast(s, operands[i+1].start, operands[i+1].end);
+      } else {
+        right = new Node;
+        *right = operands[i+1];
+        nodes.push_back(right);
+      }
+      new_root->val = s[operators[i]];
+      new_root->left = root;
+      new_root->right = right;
+      root = new_root;
+      nodes.push_back(new_root);
+    }
+  }
+  return root;
+}
+
+void dfs(Node *node) {
+  if (node->left) dfs(node->left);
+  if (node->right) dfs(node->right);
+  if (node->val) cout << node->val;
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  string s; cin >> s;
+  Node *root = ast(s, 0, s.length()-1);
+
+  dfs(root);
+
+  for (Node *n : nodes)
+    delete n;
+
+  return 0;
+}
+```
+
+- 너무 어렵게 풀었다. 모노톤 스택으로 해결 가능하다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int prec(char op) {
+  if (op=='+'||op=='-') return 1;
+  if (op=='*'||op=='/') return 2;
+  return 0;
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  string s; cin >> s;
+  stack<char> ops;
+
+  for (char ch : s) {
+    if (isalpha(ch)) {
+      cout << ch;
+    } else if (ch=='(') {
+      ops.push(ch);
+    } else if (ch==')') {
+      while (!ops.empty() && ops.top() != '(')
+        cout << ops.top(), ops.pop();
+      if (!ops.empty()) ops.pop(); // remove '('
+    } else {
+      while (!ops.empty() && prec(ops.top()) >= prec(ch))
+        cout << ops.top(), ops.pop();
+      ops.push(ch);
+    }
+  }
+
+  while (!ops.empty())
+    cout << ops.top(), ops.pop();
+
+  return 0;
+}
+```
+
+- 이 문제로 티어 플래티넘 5를 얻었다.
