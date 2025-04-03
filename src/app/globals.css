@@ -1,35 +1,5 @@
 @import 'tailwindcss';
 
-@theme {
-  --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
-  --background-image-gradient-conic: conic-gradient(
-    from 180deg at 50% 50%,
-    var(--tw-gradient-stops)
-  );
-}
-
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
-  }
-}
-
-@utility text-balance {
-  text-wrap: balance;
-}
-
 @layer utilities {
   :root {
     --foreground-rgb: 0, 0, 0;
@@ -52,12 +22,6 @@
 
 mjx-container svg {
   display: inline-block;
-}
-
-/* FIXME: */
-mjx-container[display='true'] {
-  display: flex !important;
-  justify-content: center;
 }
 
 .content {
@@ -94,22 +58,22 @@ mjx-container[display='true'] {
   padding: 0;
 }
 
-.content section:has(#toc) ol > li {
+.content section:has(#toc) ol>li {
   display: table;
   counter-increment: item;
 }
 
-.content section:has(#toc) ol > li:before {
+.content section:has(#toc) ol>li:before {
   content: counters(item, '.') '. ';
   display: table-cell;
   padding-right: 0.6em;
 }
 
-.content section:has(#toc) li ol > li {
+.content section:has(#toc) li ol>li {
   margin: 0;
 }
 
-.content section:has(#toc) li ol > li:before {
+.content section:has(#toc) li ol>li:before {
   content: counters(item, '.') '. ';
 }
 
@@ -316,7 +280,7 @@ mjx-container[display='true'] {
   margin: 1rem 0;
 }
 
-.content pre > code {
+.content pre>code {
   background-color: #f4f4f4;
   padding: 0.5em;
   border-radius: 0.3em;
