@@ -285,10 +285,7 @@ int main() {
 #include <bits/stdc++.h>
 using namespace std;
 
-using ll = long long;
 using vi = vector<int>;
-using vb = vector<bool>;
-using pi = pair<int, int>;
 
 struct DisjointSet {
   vi parent, rank;
@@ -482,7 +479,7 @@ Node* ast(string const& s, int start, int end) { // [start, end]
     if (paren_cnt>0) {
       if (ch=='(') {
         paren_cnt++;
-      } else if (ch==')') { // ch==')' -> paren_idx>=0. otherwise, bad expression
+      } else if (ch==')') { // ch==')' -> paren_idx>0. otherwise, bad expression
         paren_cnt--;
         if (paren_cnt == 0) {
           operands.push_back({.start=paren_idx+1, .end=i-1});

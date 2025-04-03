@@ -1,0 +1,458 @@
+---
+title: 2025년 4월 1주차 TIL
+---
+
+# TOC
+
+# 250401
+
+## BOJ 20040 : 사이클 게임 (Gold 4)
+
+- $m$번 DFS를 돌려서 사이클을 조사하는 것은 비효율적이다. Disjoint Set을 활용하도록 하자.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+
+struct DisjointSet {
+  vi parent, rank;
+
+  DisjointSet(int n) {
+    rank.resize(n, 1);
+    parent.resize(n);
+    for (int i=0;i<n;i++)
+      parent[i]=i;
+  }
+
+  int find(int x) {
+    if (parent[x]==x) return x;
+    return parent[x]=find(parent[x]);
+  }
+
+  void merge(int x, int y) {
+    x=find(x), y=find(y);
+    if (rank[x]>rank[y]) swap(x,y);
+    parent[x]=y;
+    rank[y]+=rank[x];
+  }
+};
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m; cin >> n >> m;
+
+  DisjointSet ds(n);
+  for (int i=1;i<=m;i++) {
+    int x, y; cin >> x >> y;
+    if (ds.find(x) == ds.find(y)) {
+      cout << i; return 0;
+    } else {
+      ds.merge(x, y);
+    }
+  }
+  cout << 0;
+
+  return 0;
+}
+```
+
+## BOJ 5615 : 아파트 임대 (Platinum 1)
+
+- 면적을 $S$라 하면 다음과 같이 식을 변형할 수 있다.
+
+  $$
+  \begin{align*}
+    2xy+x+y&=S \\
+    (2x+1)(2y+1) &= 2S+1
+  \end{align*}
+  $$
+
+- $2S+1$을 1보다 큰 홀수 두 개로 쪼갤 수 있는가, 즉 $2S+1$이 소수인가를 판정하면 된다.
+
+- 에라토스테네스의 체는 느리다. [밀러-라빈 소수 판정법](/ko/miller-rabin_primality_test)을 사용하면 된다.
+- 시간 복잡도는 $O(Nks)$이 된다.
+  - $k$는 밀러-라빈 소수 판정에 사용되는 밑 $a$의 개수로, 결정론적 알고리즘에는 최소 12가 필요하며,
+  - $s$는 `miller_rabin` 함수 내의 반복문의 횟수로, 이진수로 나타냈을 때의 자리수이다. 문제의 조건상 32이다.
+- $100,000\times 12 \times 32 = 38,400,000 < 100,000,000$로 비교적 아슬하게 TLE를 면할 수 있다.
+
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+using u64 = uint64_t;
+using u128 = __uint128_t;
+
+u64 binpow(u64 base, u64 e, u64 mod) {
+  u64 result = 1;
+  base %= mod;
+  while (e) {
+    if (e & 1)
+      result = (u128)result * base % mod;
+    base = (u128)base * base % mod;
+    e >>= 1;
+  }
+  return result;
+}
+
+bool miller_rabin(u64 n, u64 a, u64 d, int s) {
+  u64 x = binpow(a, d, n);
+  if (x == 1 || x == n - 1)
+    return false;
+  for (int r = 1; r < s; r++) {
+    x = (u128)x * x % n;
+    if (x == n - 1)
+      return false;
+  }
+  return true;
+};
+
+bool is_prime(u64 n) {
+  if (n < 2)
+    return false;
+
+  int r = 0;
+  u64 d = n - 1;
+  while ((d & 1) == 0) {
+    d >>= 1;
+    r++;
+  }
+
+  for (int a : {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37}) {
+    if (n == a)
+      return true;
+    if (miller_rabin(n, a, d, r))
+      return false;
+  }
+  return true;
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin>>n;
+
+  int cnt = 0;
+  for (int i=0; i<n; i++) {
+    u64 x; cin>>x;
+    cnt += is_prime(2*x+1);
+  }
+
+  cout << cnt;
+
+  return 0;
+}
+```
+
+- [원본 문제](https://www2.ioi-jp.org/joi/2005/2006-m2-prob_and_sol/2006-m2-t4-review.html)에서는 밀러-라빈을 의도한 것은 아닌 것으로 추정된다.
+
+{/* 
+## BOJ 2473 : 세 용액 (Gold 3)
+
+- `arr`의 2SUM과 `arr`를 한 배열에 담고 투 포인터로 풀면 될 것 같다고 생각했다.
+- 앞서 두 용액 문제를 투 포인터로 다시 풀어보자.
+
+  ```cpp
+  #include <bits/stdc++.h>
+  using namespace std;
+
+  using vi = vector<int>;
+  using pi = pair<int, int>;
+
+  const int INF = numeric_limits<int>::max();
+
+  int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n; cin >> n;
+    vi arr(n);
+    for (int i=0;i<n;i++)
+      cin >> arr[i];
+
+    sort(arr.begin(), arr.end());
+
+    int l=0, r=n-1, m=INF;
+    pi ans {-1,-1};
+    while (l<r) {
+      if (abs(arr[l]+arr[r])<m) {
+        m=abs(arr[l]+arr[r]);
+        ans={arr[l],arr[r]};
+      }
+      if (r-l<=1) break;
+      int move_l = abs(arr[l+1]+arr[r]);
+      int move_r = abs(arr[l]+arr[r-1]);
+      if (move_l<move_r) {
+        l++;
+      } else {
+        r--;
+      }
+    }
+
+    cout << ans.first << ' ' << ans.second;
+
+    return 0;
+  }
+  ``` */}
+
+# 250403
+
+## BOJ 2332 : 전화번호 (Gold 4)
+
+- 다음 그래프를 떠올릴 수 있다.
+
+  ![image](/assets/boj-2332.svg)
+
+- 다익스트라 사용하면 될 것 같다!
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using pi = pair<int, int>;
+using vi = vector<int>;
+
+const int INF = numeric_limits<int>::max();
+
+char to_num(char ch) {
+  if (ch == 'o' || ch == 'q' || ch == 'z') return '0';
+  if (ch == 'i' || ch == 'j') return '1';
+  if (ch == 'a' || ch == 'b' || ch == 'c') return '2';
+  if (ch == 'd' || ch == 'e' || ch == 'f') return '3';
+  if (ch == 'g' || ch == 'h') return '4';
+  if (ch == 'k' || ch == 'l') return '5';
+  if (ch == 'm' || ch == 'n') return '6';
+  if (ch == 'p' || ch == 'r' || ch == 's') return '7';
+  if (ch == 't' || ch == 'u' || ch == 'v') return '8';
+  if (ch == 'w' || ch == 'x' || ch == 'y') return '9';
+  return '-';
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  string s; cin >> s;
+  int l = s.length();
+  vector<vector<pi>> G(l+1); // +1 : terminal
+
+  int n; cin >> n;
+  vector<string> words(n);
+  for (int i=0;i<n;i++) {
+    cin >> words[i];
+    int wl=(int)words[i].length();
+    for (int j=0;j<l-wl+1;j++) {
+      bool okay=true;
+      for (int k=0;k<wl;k++) {
+        if (s[j+k] != to_num(words[i][k])) {
+          okay=false; break;
+        }
+      }
+      if (okay) G[j].emplace_back(j+wl,i);
+    }
+  }
+
+  priority_queue<pi, vector<pi>, greater<>> pq;
+  vi dist(l+1, INF);
+  vector<bool> visited(l+1, false);
+  vector<pi> pred(l+1, {-1, -1});
+  dist[0]=0;
+  pq.emplace(0, 0);
+  while (!pq.empty()) {
+    int u=pq.top().second; pq.pop();
+    if (visited[u]) continue;
+    visited[u] = true;
+    for (auto [v, w_idx] : G[u]) {
+      if (dist[u]+1<dist[v]) {
+        dist[v]=dist[u]+1;
+        pred[v]={u,w_idx};
+        pq.emplace(dist[v], v);
+      }
+    }
+  }
+
+  if (pred[l].first == -1) {
+    cout << "0\nNo solution.";
+    return 0;
+  }
+
+  vi sol;
+  int cur=l;
+  while (cur!=-1) {
+    if (pred[cur].second != -1)
+      sol.insert(sol.begin(), pred[cur].second);
+    cur=pred[cur].first;
+  }
+
+  cout << sol.size() << '\n';
+  for (int w_idx : sol) {
+    cout << words[w_idx] << '\n';
+  }
+
+  return 0;
+}
+```
+
+## BOJ 7662 : 이중 우선순위 큐 (Gold 4)
+
+- min heap, max heap을 각각 두어 lazy하게 동기화 시키면 된다.
+- 마지막 동기화 잊지 않기!
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using pi = pair<int, int>;
+using vi = vector<int>;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int T; cin >> T;
+  while (T--) {
+    bitset<1'000'000> has;
+    priority_queue<pi> pq_less;
+    priority_queue<pi, vector<pi>, greater<>> pq_greater;
+    int cnt=0;
+    int k; cin >> k;
+    while (k--) {
+      char cmd; cin >> cmd;
+      if (cmd == 'I') {
+        int x; cin >> x;
+        pq_less.emplace(x, cnt);
+        pq_greater.emplace(x, cnt);
+        has[cnt] = true;
+        cnt++;
+      } else {
+        int which; cin >> which;
+        if (which == 1) {
+          while (!pq_less.empty() && !has[pq_less.top().second])
+            pq_less.pop();
+          if (!pq_less.empty()) {
+            has[pq_less.top().second] = false;
+            pq_less.pop();
+          }
+        } else {
+          while (!pq_greater.empty() && !has[pq_greater.top().second])
+            pq_greater.pop();
+          if (!pq_greater.empty()) {
+            has[pq_greater.top().second] = false;
+            pq_greater.pop();
+          }
+        }
+      }
+    }
+    if (has.count() == 0) {
+      cout << "EMPTY\n";
+    } else {
+      while (!pq_less.empty() && !has[pq_less.top().second])
+        pq_less.pop();
+      while (!pq_greater.empty() && !has[pq_greater.top().second])
+        pq_greater.pop();
+      cout << pq_less.top().first << ' ' << pq_greater.top().first << '\n';
+    }
+  }
+
+  return 0;
+}
+```
+
+## BOJ 1904 : 01타일 (Silver 3)
+
+- '동적 계획법' 단계를 마저 풀어보자.
+- 다음 점화식이 생각나지 않을 수 없다.
+
+  $$
+  \texttt{dp}[i]=\texttt{dp}[i-1]+\texttt{dp}[i-2]\quad(\texttt{i}\geq3)
+  $$
+
+  $$
+  \texttt{dp}[1]=1,\quad \texttt{dp}[2]=2
+  $$
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using pi = pair<int, int>;
+using vi = vector<int>;
+
+int dp[1'000'001] = {0, };
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  dp[1]=1;
+  dp[2]=2;
+  for (int i=3;i<=n;i++) {
+    dp[i] = (dp[i-2] + dp[i-1]) % 15746;
+  }
+
+  cout << dp[n];
+
+  return 0;
+}
+```
+
+## BOJ 9184 : 신나는 함수 실행 (Silver 2)
+
+- 메모메모
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+map<int, int> memo;
+int w(int a, int b, int c) {
+  if (a <= 0 || b <= 0 || c <= 0) return 1;
+  if (a > 20 || b > 20 || c > 20) return w(20, 20, 20);
+  if (memo.count(a*10000+b*100+c)) return memo[a*10000+b*100+c];
+  if (a < b && b < c) return memo[a*10000+b*100+c]=w(a,b,c-1)+w(a,b-1,c-1)-w(a,b-1,c);
+  return memo[a*10000+b*100+c]=w(a-1,b,c)+w(a-1,b-1,c)+w(a-1,b,c-1)-w(a-1,b-1,c-1);
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int a, b, c;
+  while (cin >> a >> b >> c, a != -1 || b != -1 || c != -1)
+    cout << "w(" << a << ", " << b << ", " << c << ") = " << w(a, b, c) << '\n';
+
+  return 0;
+}
+```
+
+## BOJ 24416 : 알고리즘 수업 - 피보나치 수 1 (Bronze 1)
+
+- 코드1은 $F_n$번, 코드2는 $n-2$번 실행된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int F[41]={0,};
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  F[1]=F[2]=1;
+  for (int i=3;i<=n;i++)
+    F[i]=F[i-1]+F[i-2];
+  cout << F[n] << " " << n-2;
+
+  return 0;
+}
+```
+
+- 이로써 '동적 계획법 1' 단계를 모두 해결하였다.
