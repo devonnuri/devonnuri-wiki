@@ -136,7 +136,7 @@ async function updateAll() {
 
         if (
           oldestArticle &&
-          dayjs(article.updatedAt).isAfter(dayjs(oldestArticle.updatedAt))
+          (article.updatedAt === null || dayjs(article.updatedAt).isAfter(dayjs(oldestArticle.updatedAt)))
         ) {
           recentArticles[article.language].pop();
           recentArticles[article.language].push(article);
@@ -144,7 +144,7 @@ async function updateAll() {
       }
 
       recentArticles[article.language].sort((a, b) =>
-        dayjs(a.updatedAt).isBefore(dayjs(b.updatedAt)) ? 1 : -1,
+        a === null || dayjs(a.updatedAt).isBefore(dayjs(b.updatedAt)) ? 1 : -1,
       );
 
       const content = await readFile(mdxFile, 'utf-8');

@@ -23,7 +23,7 @@ export default async function RecentChanges() {
                 {article.title}
               </a>
             </div>
-            <div className="ml-auto">{dayjs(article.updatedAt).fromNow()}</div>
+            <div className="ml-auto">{article.updatedAt === null ? '저장 전' : dayjs(article.updatedAt).fromNow()}</div>
           </div>
         ))}
       </div>
