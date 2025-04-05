@@ -19,6 +19,10 @@ const SearchInput = ({ language, placeholder }: SearchInputProps) => {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 
   useEffect(() => {
+    if (!query) {
+      setSearchResults([]);
+      return;
+    }
     fetch(`/api/search?lang=${language}&query=${query}`)
       .then((res) => res.json())
       .then((data) => setSearchResults(data));

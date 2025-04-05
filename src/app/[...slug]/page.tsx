@@ -1,14 +1,16 @@
+import { RunOptions, compile, run } from '@mdx-js/mdx';
 import dayjs from 'dayjs';
 import { readFile } from 'fs/promises';
 import 'highlight.js/styles/github.css';
 import { Metadata } from 'next';
-import { MDXRemote } from 'next-mdx-remote/rsc';
 import { redirect } from 'next/navigation';
 import path from 'path';
 import { Fragment } from 'react';
+import * as runtime from 'react/jsx-runtime';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeMathjax from 'rehype-mathjax/svg';
 import rehypeSlug from 'rehype-slug';
+import remarkFrontmatter from 'remark-frontmatter';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkSectionize from 'remark-sectionize';
@@ -101,6 +103,38 @@ export default async function WikiPage({ params }: Props) {
   const createdAt = dayjs(article.createdAt);
   const updatedAt = dayjs(article.updatedAt);
 
+  const code = String(
+    await compile(markdown, {
+      outputFormat: 'function-body',
+      rehypePlugins: [
+        rehypeSlug,
+        [
+          rehypeMathjax,
+          {
+            svg: { scale: 1 },
+          },
+        ],
+        rehypeHighlight,
+      ],
+      remarkPlugins: [
+        [remarkToc, { ordered: true }],
+        remarkSectionize,
+        remarkGfm,
+        remarkMath,
+        remarkSmartquote,
+        remarkFrontmatter,
+      ],
+      remarkRehypeOptions: {
+        footnoteLabel: t('footnotes'),
+      },
+    }),
+  );
+
+  const { default: MDXContent } = await run(code, {
+    ...(runtime as unknown as RunOptions),
+    baseUrl: import.meta.url,
+  });
+
   return (
     <>
       <div>
@@ -173,35 +207,7 @@ export default async function WikiPage({ params }: Props) {
         </div>
       </div>
       <div className="content">
-        <MDXRemote
-          source={markdown}
-          options={{
-            parseFrontmatter: true,
-            mdxOptions: {
-              rehypePlugins: [
-                rehypeSlug,
-                [
-                  rehypeMathjax,
-                  {
-                    svg: { scale: 1 },
-                  },
-                ],
-                rehypeHighlight,
-              ],
-              remarkPlugins: [
-                [remarkToc, { ordered: true }],
-                remarkSectionize,
-                remarkGfm,
-                remarkMath,
-                remarkSmartquote,
-              ],
-              remarkRehypeOptions: {
-                footnoteLabel: t('footnotes'),
-              },
-            },
-          }}
-          components={customMDXComponents}
-        />
+        <MDXContent components={customMDXComponents} />
       </div>
     </>
   );
