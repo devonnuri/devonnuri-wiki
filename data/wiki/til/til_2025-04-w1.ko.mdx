@@ -456,3 +456,28 @@ int main() {
 ```
 
 - 이로써 '동적 계획법 1' 단계를 모두 해결하였다.
+
+## BOJ 33632 : 2교시: 체육 (Silver 1)
+
+- 반례를 못 찾아서 업솔빙했다.
+
+```py
+w, h = map(int, input().split())
+x0, y0 = map(int, input().split())
+x1, y1, x2, y2 = map(int, input().split())
+
+if y0 == 0 or y0 <= y1:
+  print(0)
+else:
+  left = (y1 * x0) / y0
+  right = w + y1*(x0-w)/y0
+  if left > right:
+    left, right = right, left
+  if right <= x1 or x2 <= left:
+    print(0)
+  else:
+    l = max(left, x1)
+    r = min(right, x2)
+    prob = (r - l) / (right - left)
+    print(f"{prob:.12f}")
+```

@@ -20,7 +20,9 @@ import remarkToc from 'remark-toc';
 import { getTranslation } from '@/app/i18n';
 import { FALLBACK_LANGUAGE, checkLanguage } from '@/app/i18n/consts';
 import { getEntries } from '@/app/lib/article';
-import customMDXComponents from '@/components/mdx/custom-mdx-components';
+import RecentChanges from '@/components/mdx/RecentChanges';
+import Subpages from '@/components/mdx/Subpages';
+import Theorem from '@/components/mdx/Theorem';
 
 interface Props {
   params: Promise<{
@@ -207,7 +209,15 @@ export default async function WikiPage({ params }: Props) {
         </div>
       </div>
       <div className="content">
-        <MDXContent components={customMDXComponents} />
+        <MDXContent
+          components={{
+            Theorem,
+            RecentChanges,
+            Subpages: () => {
+              return <Subpages entryId={entryId} />;
+            },
+          }}
+        />
       </div>
     </>
   );
