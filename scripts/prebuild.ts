@@ -63,11 +63,12 @@ const getParentsAndEntryId = (mdxFile: string) => {
   return {
     parents: isIndex ? parents.slice(0, -1) : parents,
     entryId,
+    isIndex,
   };
 };
 
 async function parseArticle(mdxFile: string): Promise<Article> {
-  const { entryId } = getParentsAndEntryId(mdxFile);
+  const { entryId, isIndex } = getParentsAndEntryId(mdxFile);
 
   const language = mdxFile.split('.').at(-2);
 
@@ -91,6 +92,22 @@ async function parseArticle(mdxFile: string): Promise<Article> {
   const createdAt = createdAtRaw.trim()?.split('\n')?.[0] || null;
   const updatedAt = updatedAtRaw.trim()?.split('\n')?.[0] || createdAt;
 
+  let children: string[] = [];
+  if (isIndex || entryId === 'main_page') {
+    const siblingFiles = await glob(
+      `./${path.dirname(mdxFile)}/*.${language}.mdx`,
+    );
+    const siblingDirs = await glob(
+      `./${path.dirname(mdxFile)}/*/index.${language}.mdx`,
+    );
+    children = siblingFiles.concat(siblingDirs)
+      .filter((sibling) => sibling !== mdxFile)
+      .map((sibling) => {
+        const { entryId: siblingEntryId } = getParentsAndEntryId(sibling);
+        return siblingEntryId;
+      });
+  }
+
   return {
     entryId,
     title: frontmatter.title,
@@ -100,6 +117,7 @@ async function parseArticle(mdxFile: string): Promise<Article> {
     createdAt,
     updatedAt,
     originalPath: mdxFile,
+    children,
   };
 }
 
@@ -161,9 +179,7 @@ async function updateAll() {
 
     const entryPromises = Object.entries(
       groupBy(articles, (article) => article.entryId),
-    ).map(async (group) => {
-      const [entryId, articles] = group;
-
+    ).map(async ([entryId, articles]) => {
       if (entries[entryId]) {
         throw new Error(`Duplicate entry id: ${entryId}`);
       }

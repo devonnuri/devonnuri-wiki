@@ -25,6 +25,7 @@ export interface Article {
   createdAt: string | null; // ISO 8601
   updatedAt: string | null; // ISO 8601
   originalPath: string;
+  children: string[];
 }
 
 export interface SearchEntry {
@@ -80,3 +81,25 @@ export const getSearchIndex = async (
     path.join(process.cwd(), 'mdx', `searchIndex.${lang}.json`),
     'utf-8',
   ).then((res) => JSON.parse(res.toString()));
+
+export const getSubpages = async (
+  entryId: string,
+  lang: Language
+): Promise<Article[]> => {
+  const entries = await getEntries();
+  const entry = entries[entryId];
+
+  if (!entry) {
+    return [];
+  }
+
+  const article = entry.articles[lang];
+
+  if (!article) {
+    return [];
+  }
+
+  return article.children
+    .map((child) => entries[child].articles[lang])
+    .filter((child) => child !== undefined) as Article[];
+}
