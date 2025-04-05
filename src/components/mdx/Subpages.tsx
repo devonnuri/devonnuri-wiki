@@ -1,8 +1,5 @@
-import dayjs from 'dayjs';
-
 import { getLanguage, getTranslation } from '@/app/i18n';
-import { checkLanguage } from '@/app/i18n/consts';
-import { getRecentChanges, getSubpages } from '@/app/lib/article';
+import { getSubpages } from '@/app/lib/article';
 
 interface SubpagesProps {
   entryId: string;

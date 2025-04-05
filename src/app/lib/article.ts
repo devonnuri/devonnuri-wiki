@@ -84,7 +84,7 @@ export const getSearchIndex = async (
 
 export const getSubpages = async (
   entryId: string,
-  lang: Language
+  lang: Language,
 ): Promise<Article[]> => {
   const entries = await getEntries();
   const entry = entries[entryId];
@@ -102,4 +102,4 @@ export const getSubpages = async (
   return article.children
     .map((child) => entries[child].articles[lang])
     .filter((child) => child !== undefined) as Article[];
-}
+};
