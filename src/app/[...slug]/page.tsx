@@ -16,6 +16,7 @@ import remarkMath from 'remark-math';
 import remarkSectionize from 'remark-sectionize';
 import remarkSmartquote from 'remark-smartquote';
 import remarkToc from 'remark-toc';
+import remarkWikiLink from 'remark-wiki-link';
 
 import { getTranslation } from '@/app/i18n';
 import { FALLBACK_LANGUAGE, checkLanguage } from '@/app/i18n/consts';
@@ -125,6 +126,13 @@ export default async function WikiPage({ params }: Props) {
         remarkMath,
         remarkSmartquote,
         remarkFrontmatter,
+        [
+          remarkWikiLink,
+          {
+            permalinks: Object.keys(entries),
+            hrefTemplate: (permalink: string) => `/${language}/${permalink}`,
+          },
+        ],
       ],
       remarkRehypeOptions: {
         footnoteLabel: t('footnotes'),

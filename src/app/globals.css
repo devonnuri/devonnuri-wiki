@@ -159,6 +159,19 @@ mjx-container svg {
   color: #795cb2;
 }
 
+.content a.new {
+  @apply text-red-800;
+}
+
+.content a:not(.internal):not(section:has(#toc) a):not(.data-footnote-backref) {
+  @apply text-green-800;
+}
+
+.content a:not(.internal):not(section:has(#toc) a):not(.data-footnote-backref):before {
+  @apply bg-green-800 text-white text-xs font-bold rounded-xs px-0.5 relative;
+  content: '→';
+}
+
 .content a[aria-describedby='footnote-label']:before {
   content: '[';
 }

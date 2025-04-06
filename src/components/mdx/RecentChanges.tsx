@@ -18,7 +18,7 @@ export default async function RecentChanges() {
             <div>
               <a
                 href={`/${lang}/${article.entryId}`}
-                className="no-underline hover:underline"
+                className="no-underline hover:underline internal"
               >
                 {article.title}
               </a>

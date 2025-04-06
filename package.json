@@ -31,7 +31,8 @@
     "remark-math": "^6.0.0",
     "remark-sectionize": "^2.1.0",
     "remark-smartquote": "^0.0.1",
-    "remark-toc": "^9.0.0"
+    "remark-toc": "^9.0.0",
+    "remark-wiki-link": "^2.0.1"
   },
   "devDependencies": {
     "@commander-js/extra-typings": "^13.1.0",

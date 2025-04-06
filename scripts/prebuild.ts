@@ -100,7 +100,8 @@ async function parseArticle(mdxFile: string): Promise<Article> {
     const siblingDirs = await glob(
       `./${path.dirname(mdxFile)}/*/index.${language}.mdx`,
     );
-    children = siblingFiles.concat(siblingDirs)
+    children = siblingFiles
+      .concat(siblingDirs)
       .filter((sibling) => sibling !== mdxFile)
       .map((sibling) => {
         const { entryId: siblingEntryId } = getParentsAndEntryId(sibling);
@@ -154,7 +155,8 @@ async function updateAll() {
 
         if (
           oldestArticle &&
-          (article.updatedAt === null || dayjs(article.updatedAt).isAfter(dayjs(oldestArticle.updatedAt)))
+          (article.updatedAt === null ||
+            dayjs(article.updatedAt).isAfter(dayjs(oldestArticle.updatedAt)))
         ) {
           recentArticles[article.language].pop();
           recentArticles[article.language].push(article);
@@ -162,7 +164,9 @@ async function updateAll() {
       }
 
       recentArticles[article.language].sort((a, b) =>
-        a === null || dayjs(a.updatedAt).isBefore(dayjs(b.updatedAt)) ? 1 : -1,
+        b.updatedAt === null || dayjs(a.updatedAt).isBefore(dayjs(b.updatedAt))
+          ? 1
+          : -1,
       );
 
       const content = await readFile(mdxFile, 'utf-8');

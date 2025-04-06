@@ -26,7 +26,9 @@ export default async function Subpages({ entryId }: SubpagesProps) {
       <ul>
         {subpages.map((subpage) => (
           <li key={subpage.entryId}>
-            <a href={`/${lang}/${subpage.entryId}`}>{subpage.title}</a>
+            <a href={`/${lang}/${subpage.entryId}`} className="internal">
+              {subpage.title}
+            </a>
           </li>
         ))}
       </ul>
