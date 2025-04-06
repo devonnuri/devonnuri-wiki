@@ -73,7 +73,7 @@ int main() {
 
 - $2S+1$을 1보다 큰 홀수 두 개로 쪼갤 수 있는가, 즉 $2S+1$이 소수인가를 판정하면 된다.
 
-- 에라토스테네스의 체는 느리다. [밀러-라빈 소수 판정법](/ko/miller-rabin_primality_test)을 사용하면 된다.
+- 에라토스테네스의 체는 느리다. [[miller-rabin_primality_test:밀러-라빈 소수 판정법]]을 사용하면 된다.
 - 시간 복잡도는 $O(Nks)$이 된다.
   - $k$는 밀러-라빈 소수 판정에 사용되는 밑 $a$의 개수로, 결정론적 알고리즘에는 최소 12가 필요하며,
   - $s$는 `miller_rabin` 함수 내의 반복문의 횟수로, 이진수로 나타냈을 때의 자리수이다. 문제의 조건상 32이다.
@@ -510,4 +510,200 @@ for _ in range(n):
     if c1<=0 and c2<=0 and c3<=0 or c1>=0 and c2>=0 and c3>=0:
         cnt+=1
 print(cnt)
+```
+
+## BOJ 2473 : 세 용액 (Gold 3)
+
+- 두 용액 합을 미리 `sums`에 담아두고, 이진 탐색을 통해 세 용액을 찾는 문제이다.
+- `arr`를 이분탐색하느냐, `sums`를 이분탐색하느냐를 고민해야 한다.
+  - `sums`를 이분탐색하면 중복을 피하기 위해 최대 $n$번 움직여야 하는데, 시간 초과가 나올 수 있다.
+  - `arr`를 이분탐색하면 중복을 피하기 위해 최대 $2$번만 움직이면 된다.
+- `arr`를 이분탐색하면 $O(n^2\log n)$이 된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+using vi = vector<int>;
+using pi = pair<int, int>;
+
+const ll INF = numeric_limits<ll>::max();
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  vi arr(n);
+  for (int i=0;i<n;i++)
+    cin >> arr[i];
+
+  sort(arr.begin(), arr.end());
+
+  vector<pair<ll, pi>> sums; // {arr[x]+arr[y], {x, y}}
+  sums.reserve(n*(n-1)/2);
+  for (int i=0;i<n;i++)
+    for (int j=i+1;j<n;j++)
+      sums.push_back({arr[i] + arr[j], {i, j}});
+  int sumSize=(int)sums.size();
+
+  ll m = INF;
+  array<int,3> ans{-1,-1,-1};
+  for (int i=0;i<sumSize;i++) {
+    int l=0,r=n;
+    ll x=-sums[i].first;
+    while (l<r) {
+      int mid=l+(r-l)/2;
+      if (arr[mid] < x) {
+        l = mid+1;
+      } else {
+        r = mid;
+      }
+    }
+    int idx;
+    if (l == 0) {
+      idx = 0;
+    } else if (l == n) {
+      idx = n-1;
+    } else if (abs(arr[l]-x)<abs(arr[l-1]-x)) {
+      idx = l;
+    } else {
+      idx = l-1;
+    }
+    if (idx == sums[i].second.first || idx == sums[i].second.second) {
+      l=idx-1;
+      r=idx+1;
+      if (l == sums[i].second.first || l == sums[i].second.second)
+        l--;
+      if (r == sums[i].second.first || r == sums[i].second.second)
+        r++;
+      if (l>=0) {
+        ll sum = abs(sums[i].first + arr[l]);
+        if (sum < m)
+          m = sum, ans = {arr[sums[i].second.first], arr[sums[i].second.second], arr[l]};
+      }
+      if (r<n) {
+        ll sum = abs(sums[i].first + arr[r]);
+        if (sum < m)
+          m = sum, ans = {arr[sums[i].second.first], arr[sums[i].second.second], arr[r]};
+      }
+    } else {
+      ll sum = abs(sums[i].first + arr[idx]);
+      if (sum < m)
+        m = sum, ans = {arr[sums[i].second.first], arr[sums[i].second.second], arr[idx]};
+    }
+  }
+
+  sort(ans.begin(), ans.end());
+  for (int i=0;i<3;i++)
+    cout << ans[i] << ' ';
+
+  return 0;
+}
+```
+
+- 이 방식으로 풀면, 상당히 귀찮기도 하고 이분탐색을 하면서 실수할 여지가 많다. (실제로도 많이 했다...) 대신, $O(n^2)$으로 푸는 방법이 있다.
+- 일종의 쓰리 포인터 느낌인데, 우선 '두 용액' 문제를 투 포인터로 다시 풀어보자.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+using pi = pair<int, int>;
+
+const int INF = numeric_limits<int>::max();
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  vi arr(n);
+  for (int i=0;i<n;i++)
+    cin >> arr[i];
+
+  sort(arr.begin(), arr.end());
+
+  int l=0, r=n-1, m=INF;
+  pi ans;
+  while (l<r) {
+    int sum=arr[l]+arr[r];
+    if (abs(sum)<m)
+      m=abs(sum), ans={arr[l],arr[r]};
+
+    if (sum<0) {
+      l++;
+    } else {
+      r--;
+    }
+  }
+
+  cout << ans.first << ' ' << ans.second;
+
+  return 0;
+}
+```
+
+- 여기서 `sum`의 부호에 따라 `l`과 `r`을 움직이는 이유는...
+  - `sum`이 음수일 때에는, `sum`을 덜 음수로 만들기 위해 `l`을 증가시켜야 한다.
+  - `sum`이 양수일 때에는, `sum`을 덜 양수로 만들기 위해 `r`을 감소시켜야 한다.
+  - 어찌되었든 `sum`의 절댓값이 줄어들도록 그리디하게 움직이는 것이다.
+
+- 이제 한 쪽 끝(`i`)을 고정하고, 나머지 두 쪽(`l`, `r`)을 투 포인터로 움직이면 된다. 
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+using vi = vector<int>;
+
+const ll INF = numeric_limits<ll>::max();
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  vi arr(n);
+  for (int i = 0; i < n; i++)
+    cin >> arr[i];
+
+  sort(arr.begin(), arr.end());
+
+  if (arr[0] > 0) { // all acid
+    cout << arr[0] << " " << arr[1] << " " << arr[2];
+    return 0;
+  }
+  if (arr[n-1] < 0) { // all base
+    cout << arr[n-3] << " " << arr[n-2] << " " << arr[n-1];
+    return 0;
+  }
+
+  ll m = INF;
+  array<int, 3> ans;
+  for (int i=0;i<n-2;i++) {
+    int l=i+1, r=n-1;
+    while (l<r) {
+      ll sum = arr[i]+arr[l]+arr[r];
+
+      if (abs(sum) < m)
+        m = abs(sum), ans = {i, l, r};
+
+      if (sum > 0) {
+        r--;
+      } else if (sum < 0) {
+        l++;
+      } else {
+        cout << arr[i] << " " << arr[l] << " " << arr[r];
+        return 0;
+      }
+    }
+  }
+  cout << arr[ans[0]] << " " << arr[ans[1]] << " " << arr[ans[2]];
+
+  return 0;
+}
 ```

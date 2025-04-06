@@ -163,11 +163,11 @@ mjx-container svg {
   @apply text-red-800;
 }
 
-.content a:not(.internal):not(section:has(#toc) a):not(.data-footnote-backref) {
+.content a:not(.internal):not(section:has(#toc) a):not(.data-footnote-backref):not([aria-describedby='footnote-label']) {
   @apply text-green-800;
 }
 
-.content a:not(.internal):not(section:has(#toc) a):not(.data-footnote-backref):before {
+.content a:not(.internal):not(section:has(#toc) a):not(.data-footnote-backref):not([aria-describedby='footnote-label']):before {
   @apply bg-green-800 text-white text-xs font-bold rounded-xs px-0.5 relative;
   content: '→';
 }
