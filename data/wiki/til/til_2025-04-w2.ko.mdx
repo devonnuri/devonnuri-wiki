@@ -1,0 +1,199 @@
+---
+title: 2025년 4월 2주차 TIL
+---
+
+# TOC
+
+# 250407
+
+## BOJ 1112 : 진법 변환 (Gold 3)
+
+- 양의 진법은 할 만하다. 음의 진법이 문제다.
+- -10진법을 가지고 예시를 만들어보자.
+
+  $$
+  \begin{align}
+  8265 &= 5 \times (-10)^0 + 4 \times (-10)^1 + 3 \times (-10)^2 + 2 \times (-10)^3 + 1 \times (-10)^4 \\
+  -52 &= 8 \times (-10)^0 + 6 \times (-10)^1
+  \end{align}
+  $$
+
+- 규칙을 쉽게 찾을 수 있다.
+  - $-b$진법으로 양수를 바꿀 때에는 각 자릿수 $d_i$ ($i=0,1,\cdots$)에 대해,
+    - $i$가 짝수일 때 $d_i$를 그대로 사용하고,
+    - $i$가 홀수일 때 $d_i$를 $b-d_i$로 바꾸고 다음 자릿수에 필요하다면 1을 더해준다.
+  - $-b$진법으로 음수를 바꿀 때에는 양수로 바꾼 각 자릿수 $d_i$에 대해,
+    - $i$가 짝수일 때 $d_i$를 $b-d_i$로 바꾸고 다음 자릿수에 필요하다면 1을 더해주고,
+    - $i$가 홀수일 때 $d_i$를 그대로 사용한다.
+
+- 발견한 규칙을 바탕으로 코드를 작성해보자.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int x, b; cin >> x >> b;
+
+  vi ans;
+  if (b>0) {
+    int y=abs(x);
+    while (y>0) {
+      ans.insert(ans.begin(), y%b);
+      y/=b;
+    }
+    if (x<0)
+      cout << '-';
+  } else {
+    int i=0;
+    b*=-1;
+    while (x!=0) {
+      if (i%2==(x<0)) {
+        ans.insert(ans.begin(), abs(x)%b);
+      } else {
+        int d=b-abs(x)%b;
+        if (d==b) d=0;
+        ans.insert(ans.begin(), d);
+        x+=d*(x/abs(x));
+      }
+      x/=b; i++;
+    }
+  }
+  for (int a : ans)
+    cout << a;
+  if (ans.empty())
+    cout << 0;
+
+  return 0;
+}
+```
+
+## BOJ 3665 : 최종 순위 (Gold 1)
+
+- 위상 정렬을 이용해서 풀 수 있다.
+- 사이클의 존재를 확인해야 하는데, 이를 위해 비트셋을 이용했다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+using pi = pair<int, int>;
+
+bool dfs(vector<vi>& G, vi& topo, vector<bool> &visited, bitset<501> st, int u) {
+  if (st[u]) return false;
+  if (visited[u]) return true;
+  visited[u] = true;
+  st[u] = true;
+  for (int v : G[u]) {
+    if (!dfs(G, topo, visited, st, v)) return false;
+  }
+  topo.insert(topo.begin(), u);
+  return true;
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int T; cin >> T;
+  while (T--) {
+    int n; cin >> n;
+    vector<vi> G(n+1);
+    vi order(n);
+    for (int i=0;i<n;i++)
+      cin >> order[i];
+    int m; cin >> m;
+    map<pi, bool> swapped;
+    for (int i=0;i<m;i++) {
+      int a, b; cin >> a >> b;
+      swapped[{a, b}] = true;
+    }
+
+    vi in_deg(n+1,0);
+    for (int i=0;i<n;i++) {
+      for (int j=i+1;j<n;j++) {
+        if (swapped[{order[i], order[j]}] || swapped[{order[j], order[i]}]){
+          G[order[j]].push_back(order[i]);
+          in_deg[order[i]]++;
+        } else {
+          G[order[i]].push_back(order[j]);
+          in_deg[order[j]]++;
+        }
+      }
+    }
+
+    int start=-1;
+    for (int i=1;i<=n;i++) {
+      if (in_deg[i]==0) {
+        start = i; break;
+      }
+    }
+
+    if (start == -1) {
+      cout << "IMPOSSIBLE\n";
+      continue;
+    }
+
+    vi ans;
+    vector<bool> visited(n+1,false);
+    if (dfs(G, ans, visited, 0, start)) {
+      for (int u : ans)
+        cout << u << ' ';
+      cout << '\n';
+    } else {
+      cout << "IMPOSSIBLE\n";
+    }
+  }
+
+  return 0;
+}
+```
+
+## BOJ 3273 : 두 수의 합 (Silver 3)
+
+- 투 포인터가 아닌 방법으로 해결할 수 있다.
+- 각 원소의 개수를 세어놓고, 각 원소에 대해 $x-a_i$의 개수를 합산하면 된다.
+- 단, $a_i=x-a_i$일 때에는 중복으로 세어지므로 1을 빼준다.
+- 서로 다른 원소의 쌍을 세어야 하므로, 최종적으로 2로 나누어준다.
+- 내 풀이는 $a_i$가 서로 다르지 않아도 셀 수 있지만, 굳이 그럴 필요는 없다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+
+int cnt[1'000'001] = {0, };
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  vi arr(n);
+  for (int i=0;i<n;i++) {
+    cin >> arr[i];
+    cnt[arr[i]]++;
+  }
+  int x; cin >> x;
+
+  int ans=0;
+  for (int i=0;i<n;i++) {
+    int j=x-arr[i];
+    if (j<1||j>1'000'000) continue;
+    ans += cnt[j];
+    if (arr[i]*2 == x)
+      ans--;
+  }
+
+  cout << (ans/2);
+
+  return 0;
+}
+```
