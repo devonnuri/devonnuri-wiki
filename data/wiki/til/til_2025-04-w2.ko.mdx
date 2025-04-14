@@ -197,3 +197,588 @@ int main() {
   return 0;
 }
 ```
+
+# 250408
+
+## BOJ 12100 : 2048 (Easy) (Gold 1)
+
+- $4^{10}$가지 경우의 수를 모두 탐색하면 된다.
+- 배열 관리 때문에 곤란할 수 있다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int n;
+int dfs(int cnt, int dir, int** board) {
+  if (cnt == 5) {
+    int m=0;
+    for (int i=0;i<n;i++)
+      for (int j=0;j<n;j++)
+        m = max(m, board[i][j]);
+    return m;
+  }
+  int **mat = new int*[20];
+  for (int i=0;i<20;i++) {
+    mat[i] = new int[20];
+    memset(mat[i], 0, sizeof(int)*20);
+  }
+
+  if (dir == 0) { // <-
+    for (int i=0;i<n;i++) {
+      int lastNum=0, lastIdx=-1;
+      for (int j=0;j<n;j++) {
+        if (board[i][j]==0) continue;
+        if (board[i][j] == lastNum) {
+          mat[i][lastIdx] = board[i][j]*2;
+          lastNum=0;
+        } else {
+          mat[i][++lastIdx] = board[i][j];
+          lastNum = board[i][j];
+        }
+      }
+    }
+  } else if (dir == 1) { // ->
+    for (int i=0;i<n;i++) {
+      int lastNum=0, lastIdx=n;
+      for (int j=n-1;j>=0;j--) {
+        if (board[i][j]==0) continue;
+        if (board[i][j] == lastNum) {
+          mat[i][lastIdx] = board[i][j]*2;
+          lastNum=0;
+        } else {
+          mat[i][--lastIdx] = board[i][j];
+          lastNum = board[i][j];
+        }
+      }
+    }
+  } else if (dir == 2) { // ^
+    for (int i=0;i<n;i++) {
+      int lastNum=0, lastIdx=-1;
+      for (int j=0;j<n;j++) {
+        if (board[j][i]==0) continue;
+        if (board[j][i] == lastNum) {
+          mat[lastIdx][i] = board[j][i]*2;
+          lastNum=0;
+        } else {
+          mat[++lastIdx][i] = board[j][i];
+          lastNum = board[j][i];
+        }
+      }
+    }
+  } else if (dir == 3) { // v
+    for (int i=0;i<n;i++) {
+      int lastNum=0, lastIdx=n;
+      for (int j=n-1;j>=0;j--) {
+        if (board[j][i]==0) continue;
+        if (board[j][i] == lastNum) {
+          mat[lastIdx][i] = board[j][i]*2;
+          lastNum=0;
+        } else {
+          mat[--lastIdx][i] = board[j][i];
+          lastNum = board[j][i];
+        }
+      }
+    }
+  }
+  int m=0;
+  for (int d=0;d<4;d++)
+    m=max(m,dfs(cnt+1, d, mat));
+  free(mat);
+  return m;
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  cin >> n;
+  int **board = new int*[20];
+  for (int i=0;i<n;i++) {
+    board[i] = new int[20];
+    for (int j=0;j<n;j++) {
+      cin >> board[i][j];
+    }
+  }
+  int m=0;
+  for (int d=0;d<4;d++)
+    m=max(m,dfs(0,d,board));
+
+  cout << m;
+
+  free(board);
+
+  return 0;
+}
+```
+
+# 250409
+
+## BOJ 1007 : 벡터 매칭 (Gold 2)
+
+- 조금만 생각하면 $n$개의 점에 대해 벡터의 시점으로 할 점 $(n/2)$개와 종점으로 할 점 $(n/2)$개를 정해야 함을 알 수 있다.
+- 최종 벡터는 시점으로 정한 점의 좌표를 빼고, 종점으로 정한 점의 좌표를 더함으로써 구할 수 있다.
+- $n \le 20$이므로 $\binom{n}{n/2}\le 184,756$이라서 브루트포스 해도 된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+using vi = vector<int>;
+using pi = pair<int, int>;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int T; cin >> T;
+  while (T--) {
+    int n; cin >> n;
+    vector<pi> p(n);
+    for (int i=0;i<n;i++) {
+      int x, y; cin >> x >> y;
+      p[i] = {x, y};
+    }
+    vi perm(n, 0);
+    fill(perm.begin()+n/2,perm.end(),1);
+    ll m = numeric_limits<ll>::max();
+    do {
+      ll x=0, y=0;
+      for (int i=0;i<n;i++) {
+        if (perm[i]) {
+          x+=p[i].first;
+          y+=p[i].second;
+        } else {
+          x-=p[i].first;
+          y-=p[i].second;
+        }
+      }
+      m = min(m, x*x+y*y);
+    } while (next_permutation(perm.begin(), perm.end()));
+    cout << setprecision(20) << sqrt((double) m) << '\n';
+  }
+
+  return 0;
+}
+```
+
+# 250412
+
+## BOJ 1786 : 찾기 (Platinum 5)
+
+- KMP 알고리즘을 이용해서 풀 수 있다.
+- 문제 설명에 KMP 알고리즘에 대해 잘 설명되어 있다.
+- 대신 $\pi$-배열을 $O(m)$에 구하는 방법을 알아내야 하는데, 그냥 포기하고 찾아봤다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  string t, p;
+  getline(cin, t);
+  getline(cin, p);
+  int n=t.length(), m=p.length();
+
+  vi pi(m,0);
+  int j=0;
+  for (int i=1;i<m;i++) {
+    while (j>0 && p[i] != p[j])
+      j=pi[j-1];
+    if (p[i]==p[j])
+      pi[i]=++j;
+  }
+
+  j=0;
+  vi ans;
+  for (int i=0;i<n;i++) {
+    while (j>0 && t[i]!=p[j])
+      j=pi[j-1];
+    if (t[i]==p[j]) {
+      if (j==m-1) {
+        ans.push_back(i-m+1);
+        j=pi[j];
+      } else {
+        j++;
+      }
+    }
+  }
+
+  cout << ans.size() << '\n';
+  for (int i : ans)
+    cout << i+1 << ' ';
+
+  return 0;
+}
+```
+
+## AtCoder Beginner Contest 400A : ABC400 Party
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int a; cin >> a;
+  if (400 % a == 0) {
+    cout << (400 / a);
+  } else {
+    cout << "-1";
+  }
+
+  return 0;
+}
+```
+
+## AtCoder Beginner Contest 400B : Sum of Geometric Series
+
+```py
+n, m = map(int, input().split())
+x = 0
+for i in range(m+1):
+    x += pow(n, i)
+    if x > 1_000_000_000:
+        print('inf')
+        break
+else:
+    print(x)
+```
+
+## AtCoder Beginner Contest 400C : 2^a b^2
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  ll n; cin >> n;
+  ll cnt=0;
+  for (ll a=2;a<=n;a<<=1) {
+    for (ll b=1;a*b*b<=n;b+=2) {
+      cnt++;
+    }
+  }
+  cout << cnt;
+
+  return 0;
+}
+```
+
+## Project Euler 1 : Multiples of 3 and 5
+
+```py
+sieve = [False] * 1000
+for i in range(3, 1000, 3):
+    sieve[i] = True
+for i in range(5, 1000, 5):
+    sieve[i] = True
+s = 0
+for i in range(1, 1000):
+    if sieve[i]:
+        s += i
+print(s)
+```
+
+## Project Euler 2 : Even Fibonacci numbers
+
+```py
+a, b = 1, 1
+ans=0
+while True:
+    c = a+b
+    if c%2==0:
+        ans+=c
+    if c>4_000_000:
+        break
+    a=b
+    b=c
+print(ans)
+```
+
+## Project Euler 3 : Largest prime factor
+
+```py
+sieve=[True]*775147
+for i in range(2, 775147):
+    if not sieve[i]:
+        continue
+    for j in range(i*i, 775147, i):
+        sieve[j]=False
+n=600851475143
+ans=0
+for i in range(2, 775147):
+    if n % i == 0 and sieve[i]:
+        ans=i
+        # print(i)
+
+print(ans)
+```
+
+## Project Euler 4 : Largest palindrome product
+
+```py
+sieve=[False]*1_000_000
+for i in range(100, 999):
+    for j in range(100, 999):
+        sieve[i*j]=True
+
+# ignore 5-digit case
+# 6-digit
+ans = 0
+for i in range(1,10):
+    for j in range(10):
+        for k in range(10):
+            num = i*100001 + j*10010 + k*1100
+            if sieve[num]:
+                ans = num
+print(ans)
+```
+
+## Project Euler 5 : Smallest multiple
+
+```py
+primes = [2, 3, 5, 7, 11, 13, 17, 19]
+res = {}
+for i in range(2, 21):
+    for p in primes:
+        e = 1
+        while i % (p ** e) == 0:
+            e += 1
+        e -= 1
+        if p in res:
+            res[p] = max(res[p], e)
+        else:
+            res[p] = e
+
+print(res)
+
+ans = 1
+for p, e in res.items():
+    ans *= p ** e
+
+print(ans)
+```
+
+## Project Euler 6 : Sum square difference
+
+```py
+s1 = lambda n: n*n*(n+1)*(n+1)//4
+s2 = lambda n: n*(n+1)*(2*n+1)//6
+print(s1(100)-s2(100))
+```
+
+## Project Euler 7 : 10001st prime
+
+```py
+N = 1000000
+sieve=[True]*N
+cnt=0
+for i in range(2, N):
+    if not sieve[i]:
+        continue
+    for j in range(i*i, N, i):
+        sieve[j]=False
+    cnt+=1
+    if cnt == 10001:
+        print(i)
+        break
+```
+
+## Project Euler 8 : Largest product in a series
+
+```py
+s="""
+73167176531330624919225119674426574742355349194934
+96983520312774506326239578318016984801869478851843
+85861560789112949495459501737958331952853208805511
+12540698747158523863050715693290963295227443043557
+66896648950445244523161731856403098711121722383113
+62229893423380308135336276614282806444486645238749
+30358907296290491560440772390713810515859307960866
+70172427121883998797908792274921901699720888093776
+65727333001053367881220235421809751254540594752243
+52584907711670556013604839586446706324415722155397
+53697817977846174064955149290862569321978468622482
+83972241375657056057490261407972968652414535100474
+82166370484403199890008895243450658541227588666881
+16427171479924442928230863465674813919123162824586
+17866458359124566529476545682848912883142607690042
+24219022671055626321111109370544217506941658960408
+07198403850962455444362981230987879927244284909188
+84580156166097919133875499200524063689912560717606
+05886116467109405077541002256983155200055935729725
+71636269561882670428252483600823257530420752963450
+""".replace('\n','')
+
+ans=0
+for i in range(1000-12):
+    prod=1
+    for j in range(i,i+13):
+        prod*=int(s[j])
+    ans=max(ans, prod)
+print(ans)
+```
+
+## AtCoder Beginner Contest 401A : Status Code
+
+```py
+a=int(input())
+if 200<=a<=299:
+    print('Success')
+else:
+    print('Failure')
+```
+
+## AtCoder Beginner Contest 401B : Unauthorized
+
+```py
+n=int(input())
+cnt=0
+login=False
+for _ in range(n):
+    cmd = input()
+    if cmd == 'login':
+        login=True
+    elif cmd == 'logout':
+        login=False
+    elif cmd == 'public':
+        pass
+    elif cmd == 'private':
+        cnt+=int(not login)
+print(cnt)
+```
+
+## AtCoder Beginner Contest 401C : K-bonacci
+
+- 처음에 파이썬으로 풀었다가 slice하고 append하는 과정에서 시간 초과가 나서 C++로 바꿨다.
+- 슬라이딩 윈도우를 복사하지 않고 인덱스만 바꿔서 해결해야 했다.
+- WA가 떴는데, `sum=(sum-tmp+sum)%mod;`에서 제수가 음수일 때 C++에서는 나머지 연산이 음수로 나와서 그랬다.
+- 우연히도 빠르게 발견해서 AC 받을 수 있었다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+using vi = vector<int>;
+
+const int mod = 1e9;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, k; cin >> n >> k;
+  vi win(k, 1);
+  ll sum=k;
+  for (int i=0;i<n-k;i++) {
+    int tmp=win[i%k];
+    win[i%k]=(int)(sum%mod);
+    sum=(sum-tmp+sum+mod)%mod;
+  }
+  if (n<k)
+    cout << 1;
+  else
+    cout << sum;
+
+  return 0;
+}
+```
+
+## AtCoder Beginner Contest 401D : Logical Filling
+
+- 처음 보고 쫌 골때렸다.
+- 연속된 물음표 양 끝에 `.`가 오냐 `o`가 오냐를 살펴야 해서 흠... 어쩌지 싶었다.
+- 근데 생각해보니까 `o`옆에는 항상 `.`가 와야 함을 알고 나니 다음 패턴에서 $n$에 따라 경우를 나눠 고려하면 될 것이라 판단했다.
+
+  $$
+  \texttt{.}\underbrace{\texttt{???}}_{n\text{ times}}\texttt{.}
+  $$
+
+- 우선, 모든 $n$에 대해 $\left\lfloor (n+1)/2\right\rfloor$개의 `o`를 얻을 수 있다.
+  - $n$이 홀수면 '최대 `o`의 경우'에 대해 위치가 하나로 확정된다. ($n=5$를 예로 들면, `o.o.o`)
+  - $n$이 짝수면 '최대 `o`의 경우'에 대해 위치가 두 가지로 나뉜다. ($n=4$를 예로 들면, `o.o.` 또는 `.o.o`)
+- __Claim:__ '최대 `o`의 경우'가 아니라면 위치는 확정되지 않는다.
+  - 증명은 하기 싫으니 대충 느낌만 보자.
+  - 하나라도 적다면 그 빈 `.`이 '최대 `o`의 경우'에 어디에 위치해도 되므로 확정될 리 없다.
+- 처음에 WA가 떴는데, 이미 `o`가 $K$개 있어서 `?`를 `o`로 바꾸지 않아도 되는 경우를 고려하지 않았다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, k; cin >> n >> k;
+  string s; cin >> s;
+
+  int o_cnt=0;
+  for (int i=0;i<n;i++) {
+    if (s[i] == 'o') {
+      o_cnt++;
+      if (i-1>=0) s[i-1]='.';
+      if (i+1<n) s[i+1]='.';
+    }
+  }
+
+  if (o_cnt==k) {
+    for (int i=0;i<n;i++) {
+      if (s[i] == '?') {
+        cout << '.';
+      } else {
+        cout << s[i];
+      }
+    }
+    return 0;
+  }
+
+  int run=0; // 0 : not running, >0 : running ? length
+  int max_cnt=0;
+  for (int i=0;i<n;i++) {
+    if (s[i] == '?') {
+      run++;
+    } else {
+      max_cnt+=(run+1)/2;
+      run=0;
+    }
+  }
+  if (run>0) max_cnt+=(run+1)/2;
+
+  if (o_cnt+max_cnt==k) {
+    run=0; // 0 : not running, >0 : running ? length
+    for (int i=0;i<n;i++) {
+      if (s[i] == '?') {
+        run++;
+      } else {
+        if (run%2==1)
+          for (int j=0;j<run;j++)
+            s[i-run+j]=j%2?'.':'o';
+        run=0;
+      }
+    }
+    if (run%2==1)
+      for (int j=0;j<run;j++)
+        s[n-run+j]=j%2?'.':'o';
+  }
+
+  cout << s;
+
+  return 0;
+}
+```
