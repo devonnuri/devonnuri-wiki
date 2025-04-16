@@ -1,0 +1,234 @@
+---
+title: AtCoder Beginner Contest 401 후기
+---
+
+A, B, C, D 네 문제를 해결하고 250415에 E를 업솔빙했다.
+
+# TOC
+
+# A : Status Code
+
+```py
+a=int(input())
+if 200<=a<=299:
+    print('Success')
+else:
+    print('Failure')
+```
+
+# B : Unauthorized
+
+```py
+n=int(input())
+cnt=0
+login=False
+for _ in range(n):
+    cmd = input()
+    if cmd == 'login':
+        login=True
+    elif cmd == 'logout':
+        login=False
+    elif cmd == 'public':
+        pass
+    elif cmd == 'private':
+        cnt+=int(not login)
+print(cnt)
+```
+
+# C : K-bonacci
+
+- 처음에 파이썬으로 풀었다가 slice하고 append하는 과정에서 시간 초과가 나서 C++로 바꿨다.
+- 슬라이딩 윈도우를 복사하지 않고 인덱스만 바꿔서 해결해야 했다.
+- WA가 떴는데, `sum=(sum-tmp+sum)%mod;`에서 제수가 음수일 때 C++에서는 나머지 연산이 음수로 나와서 그랬다.
+- 우연히도 빠르게 발견해서 AC 받을 수 있었다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+using vi = vector<int>;
+
+const int mod = 1e9;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, k; cin >> n >> k;
+  vi win(k, 1);
+  ll sum=k;
+  for (int i=0;i<n-k;i++) {
+    int tmp=win[i%k];
+    win[i%k]=(int)(sum%mod);
+    sum=(sum-tmp+sum+mod)%mod;
+  }
+  if (n<k)
+    cout << 1;
+  else
+    cout << sum;
+
+  return 0;
+}
+```
+
+# D : Logical Filling
+
+- 처음 보고 쫌 골때렸다.
+- 연속된 물음표 양 끝에 `.`가 오냐 `o`가 오냐를 살펴야 해서 흠... 어쩌지 싶었다.
+- 근데 생각해보니까 `o`옆에는 항상 `.`가 와야 함을 알고 나니 다음 패턴에서 $n$에 따라 경우를 나눠 고려하면 될 것이라 판단했다.
+
+  $$
+  \texttt{.}\underbrace{\texttt{???}}_{n\text{ times}}\texttt{.}
+  $$
+
+- 우선, 모든 $n$에 대해 $\left\lfloor (n+1)/2\right\rfloor$개의 `o`를 얻을 수 있다.
+  - $n$이 홀수면 '최대 `o`의 경우'에 대해 위치가 하나로 확정된다. ($n=5$를 예로 들면, `o.o.o`)
+  - $n$이 짝수면 '최대 `o`의 경우'에 대해 위치가 두 가지로 나뉜다. ($n=4$를 예로 들면, `o.o.` 또는 `.o.o`)
+- __Claim:__ '최대 `o`의 경우'가 아니라면 위치는 확정되지 않는다.
+  - 증명은 하기 싫으니 대충 느낌만 보자.
+  - 하나라도 적다면 그 빈 `.`이 '최대 `o`의 경우'에 어디에 위치해도 되므로 확정될 리 없다.
+- 처음에 WA가 떴는데, 이미 `o`가 $K$개 있어서 `?`를 `o`로 바꾸지 않아도 되는 경우를 고려하지 않았다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, k; cin >> n >> k;
+  string s; cin >> s;
+
+  int o_cnt=0;
+  for (int i=0;i<n;i++) {
+    if (s[i] == 'o') {
+      o_cnt++;
+      if (i-1>=0) s[i-1]='.';
+      if (i+1<n) s[i+1]='.';
+    }
+  }
+
+  if (o_cnt==k) {
+    for (int i=0;i<n;i++) {
+      if (s[i] == '?') {
+        cout << '.';
+      } else {
+        cout << s[i];
+      }
+    }
+    return 0;
+  }
+
+  int run=0; // 0 : not running, >0 : running ? length
+  int max_cnt=0;
+  for (int i=0;i<n;i++) {
+    if (s[i] == '?') {
+      run++;
+    } else {
+      max_cnt+=(run+1)/2;
+      run=0;
+    }
+  }
+  if (run>0) max_cnt+=(run+1)/2;
+
+  if (o_cnt+max_cnt==k) {
+    run=0; // 0 : not running, >0 : running ? length
+    for (int i=0;i<n;i++) {
+      if (s[i] == '?') {
+        run++;
+      } else {
+        if (run%2==1)
+          for (int j=0;j<run;j++)
+            s[i-run+j]=j%2?'.':'o';
+        run=0;
+      }
+    }
+    if (run%2==1)
+      for (int j=0;j<run;j++)
+        s[n-run+j]=j%2?'.':'o';
+  }
+
+  cout << s;
+
+  return 0;
+}
+```
+
+# E : Reachable Set
+
+- 풀면서 상당히 헷갈렸으나 샘플이 친절해서 도움을 많이 받았다.
+- 가능한지 여부는 1부터 $k$까지의 정점으로 구성된 서브그래프가 한 요소를 이루는지를 알아내야 한다.
+- 그리고 제거될 정점의 최소 개수는 그 하나의 요소와 인접한 모든 정점의 개수와 동일하다. 
+
+```cpp
+#include <bits/stdc++.h>
+#define sz(x) ((int)(x).size())
+using namespace std;
+
+using ll = long long;
+using vi = vector<int>;
+using pi = pair<int, int>;
+
+struct DisjointSet {
+  vi parent, rank;
+  DisjointSet(int n) {
+    rank.resize(n+1,1);
+    parent.resize(n+1);
+    for (int i=1;i<=n;i++)
+      parent[i]=i;
+  }
+
+  int find(int u) {
+    return u==parent[u]? u : parent[u]=find(parent[u]);
+  }
+
+  void merge(int u, int v) {
+    u=find(u), v=find(v);
+    if (u==v) return;
+    if (rank[u]>rank[v]) swap(u,v);
+    parent[u]=v;
+    rank[v]+=rank[u];
+  }
+};
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m; cin >> n >> m;
+  vector<vi> G(n+1);
+  vector<vi> G2(n+1);
+  for (int i=0;i<m;i++) {
+    int u, v; cin >> u >> v; // u < v
+    G[v].push_back(u); // (v) -> (u)
+    G2[v].push_back(u); // (v) -> (u)
+    G2[u].push_back(v); // (v) <- (u)
+  }
+
+  DisjointSet ds(n);
+  int prev_u=1;
+  bitset<200001> adj;
+  adj[1]=true;
+  for (int u=1;u<=n;u++) {
+    for (int v : G[u])
+      ds.merge(u, v);
+    for (int v : G2[u])
+      adj[v]=true;
+    bool okay=true;
+    int w;
+    for (w=prev_u;w<=u;w++) {
+      if (ds.find(w)!=ds.find(1)) {
+        okay=false;
+        break;
+      }
+    }
+    prev_u=w;
+    int ans=okay ? (int)adj.count()-ds.rank[ds.find(1)] : -1;
+    cout << ans << "\n";
+  }
+
+  return 0;
+}
+```
