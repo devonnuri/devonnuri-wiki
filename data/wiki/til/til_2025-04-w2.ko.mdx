@@ -704,3 +704,49 @@ int main() {
   return 0;
 }
 ```
+
+# 250417
+
+## BOJ 27172 : 수 나누기 게임
+
+- 나이브하게는 $O(N^2)$가 떠오른다. 더 나은 방법이 없을까?
+- 처음에는 배수들의 카운트를 미리 깎아주는 식으로 처리하려고 했으나, TLE가 떴다. 뜨고 나니 $x_1=1$, $x_2=2$, $\cdots$의 worst case가 떠올랐다.
+- 약수를 카운트를 올려주면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  vi arr(n);
+  unordered_map<int, int> cnt_map;
+
+  for (int i=0;i<n;i++) {
+    cin >> arr[i];
+    cnt_map[arr[i]]=0;
+  }
+
+  for (int i=0;i<n;i++) {
+    int x=arr[i];
+    for (int j=1;j*j<=x;j++) {
+      if (x%j!=0) continue;
+
+      if (cnt_map.count(j))
+        cnt_map[j]++; cnt_map[x]--;
+      if (j*j!=x && cnt_map.count(x/j))
+        cnt_map[x/j]++; cnt_map[x]--;
+    }
+  }
+
+  for (int i=0;i<n;i++)
+    cout << cnt_map[arr[i]] << ' ';
+
+  return 0;
+}
+```
