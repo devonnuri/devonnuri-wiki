@@ -1,0 +1,225 @@
+---
+title: 최장 증가 부분수열
+---
+
+# TOC
+
+# 최장 증가 부분수열
+
+최장 증가 부분수열<sub>longest increasing subsequence</sub>(LIS) 문제는 수열 $a_0$, $a_1$, $\cdots$, $a_{n-1}$이 주어졌을 때, '강한 증가<sub>strictly increasing</sub> 부분수열 중 가장 긴 것'을 찾는 것이 목표이다.
+
+좀 더 형식적으로 말하면, 다음 조건을 만족하는 가장 긴 인덱스 수열 $i_1 < i_2 < \dots < i_k$을 찾고자 하는 것이다.
+
+$$
+a_{i_1} < a_{i_2} < \dots < a_{i_k}
+$$
+
+## DP를 이용한 $O(n^2)$ 풀이
+
+동적 계획법을 이용하여 최장 증가 부분수열 문제를 해결해보자. 우선 '부분수열의 길이'를 찾는 방법을 설명하고, 이후에 실제 수열을 복원하는 방법을 알아보도록 하자.
+
+### 길이 구하기
+
+배열 $d_i$ ($0\le i\le n-1$)을 $a_i$로 끝나는 가장 긴 증가 부분수열의 길이로 정의하자.
+
+<Theorem title="예시">
+$$
+\begin{align}
+a &= \{8, 3, 4, 6, 5, 2, 0, 7, 9, 1\} \\
+d &= \{1, 1, 2, 3, 3, 1, 1, 4, 5, 2\}
+\end{align}
+$$
+
+예를 들어, $a_4$로 끝나는 가장 긴 수열은 $\{3, 4, 5\}$이고 길이는 3이다. $a_8$로 끝나는 가장 긴 수열은 $\{3, 4, 6, 7, 9\}$ 또는 $\{3, 4, 5, 7, 9\}$이며 길이는 5이다. $a_9$의 경우에는 $\{0, 1\}$로 길이 2이다.
+</Theorem>
+
+$d_0$부터 차례로 계산해 나간 뒤, $d_i$의 최댓값이 우리가 구하고자 하는 결과가 될 것이다.
+
+각 $i$에 대해 다음 두 경우로 나눌 수 있다.
+
+1. 부분수열이 $a_i$만 포함한 경우
+1. $a_i$보다 앞에 $a_i$보다 작은 $a_j$가 존재하고[^1], $a_j$로 끝나는 수열 뒤에 $a_i$를 붙인 경우
+
+$$
+d_i = \max \left(1, \max_{\substack{j < i \\ a_j < a_i}} \left(d_j + 1\right)\right)
+$$
+
+### 구현
+
+```cpp
+int lis(vector<int> const& a) {
+  int n = a.size();
+  vector<int> d(n, 1);
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < i; j++) {
+      if (a[j] < a[i])
+        d[i] = max(d[i], d[j] + 1);
+    }
+  }
+  return *max_element(d.begin(), d.end());
+}
+```
+
+### 수열 복원하기
+
+길이뿐만 아니라 수열 자체도 알아내고 싶다면, 선행자 배열 $p_i$ ($0\le i\le n-1$)를 만들어야 한다. 그러니까 $p_i$는 $a_i$로 끝나는 최장 증가 부분수열의 직전 원소의 인덱스가 된다.
+
+이렇게 하면, $d_i$가 가장 큰 $i$부터 시작하여 $p_i$를 따라가며 전체 수열을 복원할 수 있다. 편의상 $-1$로 $p_i$를 초기화하여 부분수열의 끝을 알 수 있도록 하자.
+
+```cpp
+vector<int> lis(vector<int> const& a) {
+  int n = a.size();
+  vector<int> d(n, 1), p(n, -1);
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < i; j++) {
+      if (a[j] < a[i] && d[i] < d[j] + 1) {
+        d[i] = d[j] + 1;
+        p[i] = j;
+      }
+    }
+  }
+
+  int ans = 0, pos = 0;
+  for (int i = 0; i < n; i++) {
+    if (d[i] > ans) {
+      ans = d[i];
+      pos = i;
+    }
+  }
+
+  vector<int> subseq;
+  while (pos != -1) {
+    subseq.push_back(a[pos]);
+    pos = p[pos];
+  }
+  reverse(subseq.begin(), subseq.end());
+  return subseq;
+}
+```
+
+### 수열을 복원하는 다른 방법
+
+$p_i$를 사용하지 않고도 수열을 복원할 수 있다. $d_i$가 가장 큰 $i$부터 시작하여 왼쪽으로 가며 $d_j=d_i-1$이면서 $a_j<a_i$인 $j$를 찾음으로써 가능하다. 메모리를 절약할 수 있지만 코드가 약간 길어진다.
+
+```cpp
+vector<int> lis(vector<int> const& a) {
+  int n = a.size();
+  vector<int> d(n, 1), p(n, -1);
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < i; j++) {
+      if (a[j] < a[i] && d[i] < d[j] + 1) {
+        d[i] = d[j] + 1;
+      }
+    }
+  }
+
+  int ans = 0, pos = 0;
+  for (int i = 0; i < n; i++) {
+    if (d[i] > ans) {
+      ans = d[i];
+      pos = i;
+    }
+  }
+
+  vector<int> subseq;
+  for (int i = pos; i >= 0; i--) {
+    if (a[i] < a[pos] && d[i] == d[pos] - 1) {
+      subseq.push_back(a[pos]);
+      pos = i;
+    }
+  }
+  reverse(subseq.begin(), subseq.end());
+  return subseq;
+}
+```
+
+## DP와 이진 탐색을 이용한 $O(n \log n)$ 풀이
+
+이 문제를 더 빠르게 해결하기 위해 동일하게 $O(n^2)$만큼 걸리지만 다른 방식으로 접근하는 방식을 소개하고, 이후에 $O(n\log n)$으로 개선하는 방향으로 가도록 하자.
+
+DP 배열 $d_l$ ($0\le l\le n$)를 정의할 것인데, 이번에는 $d_l$이 어떤 $a_i$나 $a$의 접미사에 대응되지는 않는다. $d_l$은 길이 $l$의 증가 부분수열의 마지막 원소의 최솟값이다.
+
+$d_0=-\infty$로, 1 이상의 $l$에 대해서는 $d_l=\infty$로 초기화하자.
+
+$a_0$부터 차례로 수를 처리하며 배열 $d$를 갱신해보자.
+
+<Theorem title="예시">
+댜음은 배열 $a=\{8, 3, 4, 6, 5, 2, 0, 6, 9, 1\}$에 대해 이의 접미사 배열과 그에 대한 DP 배열 $d$를 나타낸 것이다. 배열 $d$의 원소가 매 단계마다 바뀌는 것은 아님을 알 수 있다.
+$$
+\begin{array}{ll}
+\texttt{prefix}&= \{\} &\quad d = \{-\infty, \infty, \dots\}\\
+\texttt{prefix}&= \{8\} &\quad d = \{-\infty, 8, \infty, \dots\}\\
+\texttt{prefix}&= \{8, 3\} &\quad d = \{-\infty, 3, \infty, \dots\}\\
+\texttt{prefix}&= \{8, 3, 4\} &\quad d = \{-\infty, 3, 4, \infty, \dots\}\\
+\texttt{prefix}&= \{8, 3, 4, 6\} &\quad d = \{-\infty, 3, 4, 6, \infty, \dots\}\\
+\texttt{prefix}&= \{8, 3, 4, 6, 5\} &\quad d = \{-\infty, 3, 4, 5, \infty, \dots\}\\
+\texttt{prefix}&= \{8, 3, 4, 6, 5, 2\} &\quad d = \{-\infty, 2, 4, 5, \infty, \dots \}\\
+\texttt{prefix}&= \{8, 3, 4, 6, 5, 2, 0\} &\quad d = \{-\infty, 0, 4, 5, \infty, \dots \}\\
+\texttt{prefix}&= \{8, 3, 4, 6, 5, 2, 0, 7\} &\quad d = \{-\infty, 0, 4, 5, 7, \infty, \dots \}\\
+\texttt{prefix}&= \{8, 3, 4, 6, 5, 2, 0, 7, 9\} &\quad d = \{-\infty, 0, 4, 5, 7, 9, \infty, \dots \}\\
+\texttt{prefix}&= \{8, 3, 4, 6, 5, 2, 0, 7, 9, 1\} &\quad d = \{-\infty, 0, 1, 5, 7, 9, \infty, \dots \}\\
+\end{array}
+$$
+</Theorem>
+
+원소 $a_i$가 어떤 조건을 만족했을 때 배열 $d$에 $a_i$를 저장하게 될까? $a_i$를 길이가 $l$인 증가 부분수열 뒤에 붙일 수 있을 때 (즉, $a_i<d_l$일때), $d_{l+1}=a_i$의 방식으로 갱신할 수 있을 것이다. 그러나 $d_l$이 부분수열의 마지막 원소의 최솟값으로 정의하였으므로 기존 $d_l$보다 작은지 검사해야 한다. 이렇게 하는 이유는 길이가 $l$인 증가 부분수열에 대해 마지막 원소를 가장 작게 유지하지 않으면, 길이가 $l+1$인 증가 부분수열을 만들 수 있음에도 최소가 아닌 $d_i$보다 크지 않아 발견하지 못할 수 있기 때문이다.
+
+끝으로, LIS의 길이는 $d_l<\infty$인 최대의 $l$를 통해 구하면 될 것이다.
+
+```cpp
+int lis(vector<int> const& a) {
+  int n = a.size();
+  const int INF = 1e9;
+  vector<int> d(n+1, INF);
+  d[0] = -INF;
+
+  for (int i = 0; i < n; i++) {
+    for (int l = 0; l < n; l++) {
+      if (d[l] < a[i])
+        d[l+1] = min(d[l+1], a[i]);
+    }
+  }
+
+  int ans = 0;
+  for (int l = 0; l <= n; l++) {
+    if (d[l] < INF)
+      ans = l;
+  }
+  return ans;
+}
+```
+
+여기서 다음과 같은 사실을 알 수 있다.
+
+1. 배열 $d$는 항상 오름차순으로 정렬되어 있다. ($\forall i \forall l, d_{l-1}<d_l$)
+    - 초기 배열 $d$는 오름차순으로 정렬되어 있다.
+    - $d_l$이 $d'_l$에서 $a_i$로 갱신 될 때, $d_{l-1}<a_i=d_l\le d'_l<d_{l+1}$이므로 $d$의 대소관계는 유지된다.
+2. $a_i$는 최대 1개의 $d_l$에만 영향을 준다.
+    - 수직선에 각 $d_l$에 점이 찍혀 있다고 할 떄, $a_i$는 항상 그 점들 위에 있거나 두 점 사이($d_l$, $d_{l+1}$)에 위치할 것이다.
+    - 전자의 경우 $d_l$은 변경되지 않고, 후자의 경우 $d_{l+1}\leftarrow a_i$가 된다.
+
+그렇기에 $d_l \le a_i$인 최소 $l$을 구하는 것을 이분 탐색으로 대체함으로써 알고리즘을 개선할 수 있다.
+
+```cpp
+int lis(vector<int> const& a) {
+  int n = a.size();
+  const int INF = 1e9;
+  vector<int> d(n+1, INF);
+  d[0] = -INF;
+
+  int ans = 0;
+  for (int i = 0; i < n; i++) {
+    auto l = lower_bound(d.begin(), d.end(), a[i]);
+    *l = min(*l, a[i]);
+    ans = max(ans, (int) (l - d.begin()));
+  }
+
+  return ans;
+}
+```
+
+# 참고 문헌
+
+1. jakobkogler, et al. [Longest increasing subsequence](https://cp-algorithms.com/sequences/longest_increasing_subsequence.html). cp-algorithms.com.
+
+[^1]: 그러니까 $j < i$이면서 $a_j < a_i$인 $j$가 존재하고,

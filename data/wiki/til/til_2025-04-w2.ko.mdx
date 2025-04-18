@@ -750,3 +750,213 @@ int main() {
   return 0;
 }
 ```
+
+## BOJ 12015 : 가장 긴 증가하는 부분 수열 2 (Gold 2)
+
+- [longest_increasing_subsequence:LIS] 문서를 참고하자.
+
+```cpp
+#include <bits/stdc++.h>
+#define sz(x) ((int)(x).size())
+using namespace std;
+
+using vi = vector<int>;
+
+constexpr int INF = numeric_limits<int>::max();
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  vi d(n+1, INF);
+  d[0]=-INF;
+
+  int ans=0;
+  for (int i=0;i<n;i++) {
+    int x; cin >> x;
+    auto l=lower_bound(d.begin(), d.end(), x);
+    *l=min(*l, x);
+    ans=max(ans, (int) (l-d.begin()));
+  }
+
+  cout << ans;
+
+  return 0;
+}
+```
+
+## BOJ 12738 : 가장 긴 증가하는 부분 수열 3 (Gold 2)
+
+- 바로 위 문제와 크게 다르지 않다.
+
+## BOJ 14003 : 가장 긴 증가하는 부분 수열 5 (Platinum 5)
+
+- 우선 $O(n \log n)$으로 LIS를 구한다.
+- 원래 LIS를 복원하는 것이 빡세다. 내가 생각해낸 알고리즘은 다음과 같다.
+    - 우선 LIS를 구할 때, $d$를 변화시키는 각 $a_i$에 대해 $i$와 $l$을 $S$에 저장시킨다.
+    - 그런 뒤, 다음 과정을 통해 LIS를 복원한다.
+        ```
+        for l=(LIS 길이) to 1 do
+          S에서 l에 대해 i<=i_prev이면서 최대인 i를 찾는다.
+          lcs[l] <- (위에서 찾은 i에 대해 a_i)
+        ```
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+using pi = pair<int, int>;
+
+constexpr int INF = numeric_limits<int>::max();
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  vi d(n+1, INF);
+  d[0]=-INF;
+
+  unordered_map<int, vector<pi>> lis;
+  int m=0;
+  for (int i=0;i<n;i++) {
+    int x; cin >> x;
+    auto l=lower_bound(d.begin(), d.end(), x);
+    int l_idx = l-d.begin();
+    if (*l > x) {
+      *l=x;
+      lis[l_idx].emplace_back(i, *l);
+    }
+    m=max(m, l_idx);
+  }
+
+  cout << m << '\n';
+  int i_prev=n;
+  vi ans(m);
+  for (int l=m;l>=1;l--) {
+    auto x = upper_bound(lis[l].begin(), lis[l].end(), i_prev, [](int i, const pi& a) {
+      return i < a.first;
+    });
+    x--;
+    ans[l-1]=(*x).second;
+    i_prev = (*x).first;
+  }
+
+  for (int x : ans)
+    cout << x << ' ';
+
+  return 0;
+}
+```
+
+## BOJ 11779 : 최소비용 구하기 2 (Gold 3)
+
+- 다익스트라 + 복원 문제다.
+
+```cpp
+#include <bits/stdc++.h>
+#define sz(x) ((int)(x).size())
+using namespace std;
+
+using vi = vector<int>;
+using pi = pair<int, int>;
+
+constexpr int INF = numeric_limits<int>::max()/2;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m; cin >> n >> m;
+  vector<vector<pi>> G(n+1);
+  while (m--) {
+    int a, b, c; cin >> a >> b >> c;
+    G[a].emplace_back(c, b);
+  }
+  int src, dst; cin >> src >> dst;
+
+  priority_queue<pi, vector<pi>, greater<>> pq;
+  pq.emplace(0, src);
+  vi d(n+1, INF);
+  vi pred(n+1, -1);
+  d[src]=0;
+  while (!pq.empty()) {
+    auto [w, u] = pq.top(); pq.pop();
+    if (d[u]<w) continue;
+    for (auto [w2, v] : G[u]) {
+      if (d[v]>w+w2) {
+        d[v]=w+w2;
+        pred[v]=u;
+        pq.emplace(w+w2, v);
+      }
+    }
+  }
+
+  cout << d[dst] << '\n';
+  vi ans;
+  int prev=dst;
+  while (prev != -1) {
+    ans.insert(ans.begin(), prev);
+    prev = pred[prev];
+  }
+  cout << sz(ans) << '\n';
+  for (int x : ans)
+    cout << x << ' ';
+
+  return 0;
+}
+```
+
+## BOJ 2143 : 두 배열의 합 (Gold 3)
+
+- 해시맵과 누적합을 사용해서 해결하면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+using vi = vector<int>;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int T; cin >> T;
+  int n; cin >> n;
+  vi A_sum(n+1);
+  A_sum[0]=0;
+  for (int i=1;i<=n;i++) {
+    int x; cin >> x;
+    A_sum[i]=A_sum[i-1]+x;
+  }
+  int m; cin >> m;
+  vi B_sum(m+1);
+  B_sum[0]=0;
+  for (int i=1;i<=m;i++) {
+    int x; cin >> x;
+    B_sum[i]=B_sum[i-1]+x;
+  }
+
+  unordered_map<int, int> cnt;
+  for (int i=0;i<=n;i++)
+    for (int j=i+1;j<=n;j++)
+      cnt[A_sum[j]-A_sum[i]]++;
+
+  ll ans=0;
+  for (int i=0;i<=m;i++) {
+    for (int j=i+1;j<=m;j++) {
+      int x = T-(B_sum[j]-B_sum[i]);
+      if (cnt.count(x)) {
+        ans += cnt[x];
+      }
+    }
+  }
+
+  cout << ans;
+
+  return 0;
+}
+```
