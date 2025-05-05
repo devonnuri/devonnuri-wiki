@@ -1,0 +1,60 @@
+---
+title: 2025년 5월 1주차 TIL
+---
+
+# TOC
+
+# 250503
+
+## BOJ 1062 : 가르침 (Gold 4)
+
+- 비트마스킹을 이용해 푸는 문제다.
+- 각 문자열 $s$의 조성을 비트셋 $S$에 저장하고 $S\subseteq S'$인 모든 $S'$에 대해 $\texttt{dp}[S']$를 증가시켜주는 방식으로 해결했다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+constexpr int IDX[26] = {-1, 0, -1, 1, 2, 3, 4, 5, -1, 6, 7, 8, 9, -1, 10, 11, 12, 13, 14, -1, 15, 16, 17, 18, 19, 20};
+
+// 2^22 - 1 = 4,194,303
+int dp[4194304] = {0, };
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, k; cin >> n >> k;
+  if (k < 5) {
+    cout << 0;
+    return 0;
+  }
+  int ans = 0;
+  for (int i=0;i<n;i++) {
+    string s; cin >> s;
+    unsigned bs = 0;
+    for (char ch : s)
+      if (IDX[ch-97] >= 0)
+        bs |= 1 << IDX[ch-97];
+
+    if (popcount(bs) == k-5)
+      ans = max(ans, ++dp[bs]);
+
+    unsigned comp = bs^4194303;
+    for (unsigned subset=comp; subset; subset=(subset-1)&comp) {
+      if (popcount(subset|bs) == k-5) {
+        ans = max(ans, ++dp[subset|bs]);
+      }
+    }
+  }
+
+  cout << ans;
+
+  return 0;
+}
+```
+
+## AtCoder Beginner Contest 404
+
+- ABC 404에 참가했다. 후기는 [[abc-404:이 문서]] 참고.
+

@@ -105,13 +105,10 @@ $p_i$를 사용하지 않고도 수열을 복원할 수 있다. $d_i$가 가장 
 vector<int> lis(vector<int> const& a) {
   int n = a.size();
   vector<int> d(n, 1), p(n, -1);
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j < i; j++) {
-      if (a[j] < a[i] && d[i] < d[j] + 1) {
-        d[i] = d[j] + 1;
-      }
-    }
-  }
+  for (int i = 0; i < n; i++)
+    for (int j = 0; j < i; j++)
+      if (a[j] < a[i])
+        d[i] = max(d[i], d[j] + 1);
 
   int ans = 0, pos = 0;
   for (int i = 0; i < n; i++) {
@@ -173,18 +170,15 @@ int lis(vector<int> const& a) {
   vector<int> d(n+1, INF);
   d[0] = -INF;
 
-  for (int i = 0; i < n; i++) {
-    for (int l = 0; l < n; l++) {
+  for (int i = 0; i < n; i++)
+    for (int l = 0; l < n; l++)
       if (d[l] < a[i])
         d[l+1] = min(d[l+1], a[i]);
-    }
-  }
 
   int ans = 0;
-  for (int l = 0; l <= n; l++) {
+  for (int l = 0; l <= n; l++)
     if (d[l] < INF)
       ans = l;
-  }
   return ans;
 }
 ```
@@ -209,9 +203,9 @@ int lis(vector<int> const& a) {
 
   int ans = 0;
   for (int i = 0; i < n; i++) {
-    auto l = lower_bound(d.begin(), d.end(), a[i]);
-    *l = min(*l, a[i]);
-    ans = max(ans, (int) (l - d.begin()));
+    size_t l = lower_bound(d.begin(), d.end(), a[i]) - d.begin();
+    d[l] = min(d[l], a[i]);
+    ans = max(ans, l);
   }
 
   return ans;

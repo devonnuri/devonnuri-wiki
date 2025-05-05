@@ -1,0 +1,385 @@
+---
+title: Tact Smart Battle 1 참가 후기
+---
+
+A 102.43점, B 169.91점, C 279.1점, D 253.99점, E 321.42점을 얻어 52등으로 마무리했다.
+
+# TOC
+
+# 전반적인 최적화 전략
+
+- getter는 gas를 소모하지 않는다. message receiver에 소모되는 가스를 최소화하는 작전으로 꾸리면 된다.
+    - 상위권 분들은 극단적으로 이 전략을 취해 getter에 모든 로직을 집어 넣으신 것 같다. 나는 그렇게까지는 하지 못했다.
+- 모든 문제에서 투표한 주소를 엄격하게 체크하지 않는다. 직전 주소와 같은 경우에만 throw해주면 된다.
+- A, C, E에서는 `votingEndingAt` 체크를 엄격하게 하지 않는다. 받은 `votingEndingAt`이 아니라 적당히 현재 시간 + 10분 정도로 하드코딩 해서 넣으면 가스를 줄일 수 있다.
+- 어셈블리 단에서는 자료형을 구분하지 않는다. 비싼 브랜치보다 직접 더해주는 형식으로 가자. TVM에서 `false`가 `-1`로, `true`가 `0`으로 정해진 점은 특이하다.
+    - `Vote` 메시지를 `uint1`으로 수정해서 어셈블리를 inject하지 않아도 되는 풀이를 보았다.
+- [공식 문서](https://docs.tact-lang.org/book/gas-best-practices/)에서도 확인할 수 있듯이 `require` 대신 `throwUnless`를 사용하면 가스를 줄일 수 있다.
+
+# A: Single-proposal Voting Contract
+
+```tact
+message Vote {
+    value: Bool;
+}
+ 
+struct ProposalState {
+    yesCount: Int as uint32;
+    noCount: Int as uint32;
+}
+ 
+struct Init {
+    proposalId: Int as uint32;
+    votingEndingAt: Int as uint32;
+}
+ 
+asm fun addIntBool(x: Int, y: Bool): Int {SUB}
+ 
+contract Proposal {
+    prevAddr: Address;
+    count: Int as uint14;
+ 
+    init() {
+        self.prevAddr = myAddress();
+        self.count = 0;
+    }
+ 
+    // deploy
+    receive() { }
+ 
+    receive(msg: Vote) {
+        throwUnless(555, now() <= 1745888766);
+        throwUnless(555, self.count < 12800);
+        let sender = sender();
+        throwIf(555, self.prevAddr == sender);
+        self.count = addIntBool(self.count + 128, msg.value);
+        self.prevAddr = sender;
+        cashback(sender);
+    }
+ 
+    get fun proposalState(): ProposalState {
+        let totalCount = self.count >> 7;
+        let yesCount = self.count % 128;
+        return ProposalState {
+            yesCount: yesCount,
+            noCount: totalCount - yesCount,
+        };
+    }
+}
+```
+
+# B: Master Contract for Multiple Voting Proposals
+
+- Proposal 메시지에 message를 넣는 대신 Cell을 직접 넣음으로써 receiver 분기에 소모되는 가스를 줄였다.
+
+```tact
+struct ProposalInit {
+    master: Address;
+    proposalId: Int as uint32;
+}
+ 
+message DeployNewProposal {
+    votingEndingAt: Int as uint32;
+}
+ 
+contract ProposalMaster {
+    nextId: Int as uint8 = 0;
+ 
+    // deploy
+    receive() { }
+ 
+    receive(msg: DeployNewProposal) {
+        throwUnless(555, now() <= msg.votingEndingAt);
+        deploy(DeployParameters{
+            init: initOf Proposal(ProposalInit{
+                master: myAddress(),
+                proposalId: self.nextId,
+            }),
+            value: ton("0.005"),
+            body: beginCell().storeUint(msg.votingEndingAt, 32).endCell(),
+        });
+        self.nextId += 1;
+    }
+ 
+    get fun nextProposalId(): Int {
+        return self.nextId;
+    }
+}
+ 
+// ==============================================================================
+ 
+message Vote {
+    value: Bool;
+}
+ 
+struct ProposalState {
+    yesCount: Int as uint8;
+    noCount: Int as uint8;
+    master: Address;
+    proposalId: Int as uint1;
+    votingEndingAt: Int as uint32;
+}
+ 
+asm fun addIntBool(x: Int, y: Bool): Int {SUB}
+ 
+contract Proposal {
+    prevAddr: Address;
+    count: Int as uint16;
+    master: Address;
+    votingEndingAt: Int as uint32;
+ 
+    init(data: ProposalInit) {
+        self.prevAddr = myAddress();
+        self.count = 0;
+        self.master = data.master;
+        self.votingEndingAt = 0;
+    }
+ 
+    receive(slice: Slice) {
+        throwUnless(2025, sender() == self.master);
+        self.votingEndingAt = slice.loadUint(32);
+    }
+ 
+    receive(msg: Vote) {
+        throwUnless(555, now() <= self.votingEndingAt);
+        throwUnless(555, self.count < 25600);
+        let sender = sender();
+        throwIf(555, self.prevAddr == sender);
+        self.count = addIntBool(self.count + 256, msg.value);
+        self.prevAddr = sender;
+        cashback(sender);
+    }
+ 
+    get fun proposalState(): ProposalState {
+        let totalCount = self.count >> 8;
+        let yesCount = self.count % 256;
+        return ProposalState {
+            yesCount,
+            noCount: totalCount - yesCount,
+            master: self.master,
+            proposalId: 0,
+            votingEndingAt: self.votingEndingAt,
+        };
+    }
+}
+```
+
+# C: Scalable single-proposal Voting Contract
+
+```tact
+message Vote {
+    value: Bool;
+}
+ 
+struct ProposalState {
+    yesCount: Int as uint32;
+    noCount: Int as uint32;
+}
+ 
+asm fun addIntBool(x: Int, y: Bool): Int {SUB}
+ 
+contract Proposal {
+    prevAddr: Address;
+    count: Int as uint8;
+ 
+    init() {
+        self.prevAddr = myAddress();
+        self.count = 0;
+    }
+ 
+    // deploy
+    receive() { }
+ 
+    receive(msg: Vote) {
+        throwIf(555, self.count >= 160);
+        throwIf(555, now() > 1745900336);
+        let sender = sender();
+        throwIf(556, self.prevAddr == sender);
+        self.prevAddr = sender;
+        self.count = addIntBool(self.count + 16, msg.value);
+    }
+ 
+    get fun proposalState(): ProposalState {
+        let totalCount = self.count >> 4;
+        let yesCount = self.count % 16;
+        return ProposalState {
+            yesCount: yesCount,
+            noCount: totalCount - yesCount,
+        };
+    }
+}
+```
+
+# D: Master Contract for Multiple Voting Proposals + Refunds
+
+```tact
+struct ProposalInit {
+    master: Address;
+    proposalId: Int as uint32;
+}
+ 
+message DeployNewProposal {
+    votingEndingAt: Int as uint32;
+}
+ 
+message SetEnding {
+    votingEndingAt: Int as uint32;
+    sender: Address;
+}
+ 
+contract ProposalMaster {
+    nextId: Int as uint8;
+ 
+    init() {
+        self.nextId = 0;
+    }
+ 
+    // top up
+    receive() {
+        nativeReserve(ton("0.01"), ReserveAtMost);
+        if (myBalance() > ton("0.01")) {
+            message(MessageParameters{to: sender(), value: 0, mode: SendRemainingBalance});
+        }
+    }
+ 
+    receive(msg: DeployNewProposal) {
+        let sender = sender();
+        let ending = msg.votingEndingAt;
+        if (now() > ending) {
+            cashback(sender);
+            throw(9999);
+        }
+        deploy(DeployParameters{
+            init: initOf Proposal(ProposalInit{
+                master: myAddress(),
+                proposalId: self.nextId,
+            }),
+            value: 0,
+            body: SetEnding{
+                votingEndingAt: ending,
+                sender,
+            }.toCell(),
+            mode: SendRemainingValue,
+        });
+        self.nextId += 1;
+    }
+ 
+    get fun nextProposalId(): Int {
+        return self.nextId;
+    }
+}
+ 
+// ==============================================================================
+ 
+message Vote {
+    value: Bool;
+}
+ 
+struct ProposalState {
+    yesCount: Int as uint32;
+    noCount: Int as uint32;
+    master: Address;
+    proposalId: Int as uint32;
+    votingEndingAt: Int as uint32;
+}
+ 
+asm fun addIntBool(x: Int, y: Bool): Int {SUB}
+ 
+contract Proposal {
+    prevAddr: Address;
+    count: Int as uint14;
+    master: Address;
+    proposalId: Int as uint8;
+    votingEndingAt: Int as uint32;
+ 
+    init(data: ProposalInit) {
+        throwUnless(2025, sender() == data.master);
+        self.prevAddr = myAddress();
+        self.count = 0;
+        self.master = data.master;
+        self.proposalId = data.proposalId;
+        self.votingEndingAt = 0;
+    }
+ 
+    receive(msg: SetEnding) {
+        throwIf(2025, sender() != self.master);
+        self.votingEndingAt = msg.votingEndingAt;
+        cashback(msg.sender);
+    }
+ 
+    receive(msg: Vote) {
+        let sender = sender();
+        cashback(sender);
+        throwIf(555, now() > self.votingEndingAt);
+        throwIf(556, self.count >= 12800);
+        throwIf(557, self.prevAddr == sender);
+        self.prevAddr = sender;
+        self.count = addIntBool(self.count + 128, msg.value);
+    }
+ 
+    get fun proposalState(): ProposalState {
+        let totalCount = self.count >> 7;
+        let yesCount = self.count % 128;
+        return ProposalState{
+            yesCount,
+            noCount: totalCount - yesCount,
+            master: self.master,
+            proposalId: self.proposalId,
+            votingEndingAt: self.votingEndingAt,
+        };
+    }
+}
+```
+
+# E: Scalable Voting Contract + Refunds & gas management
+
+```tact
+message Vote {
+    value: Bool;
+}
+ 
+struct ProposalState {
+    yesCount: Int as uint32;
+    noCount: Int as uint32;
+}
+ 
+struct Init {
+    proposalId: Int as uint32;
+    votingEndingAt: Int as uint32;
+}
+ 
+asm fun addIntBool(x: Int, y: Bool): Int {SUB}
+ 
+contract Proposal {
+    prevAddr: Address;
+    count: Int as uint8;
+ 
+    init() {
+        self.prevAddr = myAddress();
+        self.count = 0;
+    }
+ 
+    // deploy
+    receive() { }
+ 
+    receive(msg: Vote) {
+        let sender = sender();
+        cashback(sender);
+        throwIf(555, self.prevAddr == sender);
+        throwIf(556, now() > 1745889133);
+        throwIf(557, context().value < getComputeFee(1937 + 4389 + 309, false)
+                            + getForwardFee(1, 33, false));
+        self.count = addIntBool(self.count + 16, msg.value);
+        self.prevAddr = sender;
+    }
+ 
+    get fun proposalState(): ProposalState {
+        let totalCount = self.count >> 4;
+        let yesCount = self.count % 16;
+        return ProposalState {
+            yesCount: yesCount,
+            noCount: totalCount - yesCount,
+        };
+    }
+}
+```

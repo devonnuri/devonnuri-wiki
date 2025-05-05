@@ -1,0 +1,94 @@
+---
+title: Neowise Labs Contest 1 (Codeforces Round 1018, Div. 1 + Div. 2) 후기
+---
+
+A, B를 해결했고 C를 업솔빙했다.
+
+# A : Wonderful Sticks
+
+- `<`가 나오면 최솟값을 낮추고, `>`가 나오면 최댓값을 올리는 식으로 구성한다.
+- 마지막에 최솟값이 1이 되도록 조정해준다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+ 
+using vi = vector<int>;
+ 
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+ 
+  int T; cin >> T;
+  while (T--) {
+    int n; cin >> n;
+    string s; cin >> s;
+    vi ans(n);
+    int l=0, r=0;
+    for (int i=0;i<n-1;i++) {
+      if (s[i] == '<') {
+        ans[i+1]=--l;
+      } else {
+        ans[i+1]=++r;
+      }
+    }
+ 
+    for (int i=0;i<n;i++)
+      cout << ans[i]-l+1 << ' ';
+    cout << '\n';
+  }
+ 
+  return 0;
+}
+```
+
+# B : Wonderful Gloves
+
+- 영어 독해가 어렵다.
+- 예제를 하나씩 뜯어보면서 해야 하는데, 코드부터 짜려고 한 게 푸는데 시간이 좀 걸린 이유가 되겠다.
+- (답) = (장갑 $k$쌍을 얻기 위해 필요한 최소 낱개 수) = (장갑 $k-1$쌍을 만드는 최대 낱개 수)$+1$
+- 쌍을 만드는 것을 방해하는 악마에 빙의하여 $k-1$개의 쌍이 되도록 하는 worst case를 떠올려 보자.
+  - $k-1$개의 쌍은 $L_i + R_i$가 가장 큰 색 $i$로 만들자.
+  - 나머지 색의 장갑은 쌍을 만들면 안되니까, $\max(L_i, R_i)$를 뽑는 경우를 생각하자.
+- 다르게 말하면, 전체 합에서 쌍을 없애버리는 색 $n-k+1$개를 골라서 빼야 한다.
+  - worst case니까 이 빼게 될 낱개를 최소화해야 한다.
+  - $\min(L_i, R_i)$를 오름차순으로 정렬해서 작은 순으로 $n-k+1$개를 골라서 빼자.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+ 
+using ll = long long;
+using vi = vector<int>;
+ 
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+ 
+  int T; cin >> T;
+  while (T--) {
+    int n, k; cin >> n >> k;
+    vector<array<int, 2>> l(n);
+    for (int i=0;i<n;i++)
+      cin >> l[i][0];
+    for (int i=0;i<n;i++)
+      cin >> l[i][1];
+ 
+    ll ans=1;
+    vi mins(n);
+    for (int i=0;i<n;i++) {
+      ans += l[i][0]+l[i][1];
+      mins[i] = min(l[i][0], l[i][1]);
+    }
+ 
+    sort(mins.begin(), mins.end());
+ 
+    for (int i=0;i<n-k+1;i++)
+      ans-=mins[i];
+ 
+    cout << ans << '\n';
+  }
+ 
+  return 0;
+}
+```

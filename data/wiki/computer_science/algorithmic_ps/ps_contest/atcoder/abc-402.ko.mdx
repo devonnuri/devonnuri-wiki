@@ -1,0 +1,120 @@
+---
+title: AtCoder Beginner Contest 402 후기
+---
+
+일정이 있어서 Unrated로 참가했다. A, B, C, D 네 문제를 해결했다.
+
+# TOC
+
+# A : CBC
+
+```py
+s = input()
+ans = ''
+for ch in s:
+    if not ch.islower():
+        ans += ch
+print(ans)
+```
+
+# B : Restaurant Queue
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int Q; cin >> Q;
+  queue<int> q;
+
+  while (Q--) {
+    int cmd; cin >> cmd;
+    if (cmd == 1) {
+      int x; cin >> x;
+      q.push(x);
+    } else {
+      cout << q.front() << '\n';
+      q.pop();
+    }
+  }
+
+  return 0;
+}
+```
+
+# C : Dislike Foods
+
+- 남은 못 먹는 재료가 0이 될 때 카운트 하면 된다.
+- 음식$\to$재료, 재료$\to$음식 관계를 모두 들고 있어야 하는 것이 포인트다. 
+- $O(n+m)$에 해결 가능하다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m; cin >> n >> m;
+  vector<vi> dish(n+1); // ing -> dish
+  vi rem(m+1, 0); // dish -> remained_ings
+
+  for (int i=1;i<=m;i++) {
+    int k; cin >> k;
+    rem[i] = k;
+    while (k--) {
+      int a; cin >> a;
+      dish[a].push_back(i);
+    }
+  }
+
+  int cnt=0;
+  for (int i=0;i<n;i++) {
+    int b; cin >> b;
+    for (int d : dish[b]) {
+      if (--rem[d]==0) {
+        cnt++;
+      }
+    }
+    cout << cnt << '\n';
+  }
+
+  return 0;
+}
+```
+
+# D : Line Crossing
+
+- (답) = (모든 $(i,j)$ ($i<j$)쌍) $-$ (평행한 $(i,j)$ ($i<j$)쌍)
+- $(a_i+b_i) \text{ mod } n$가 같으면 평행한 것이다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using ll = long long;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m; cin >> n >> m;
+  unordered_map<int, int> counter;
+  for (int i=0;i<m;i++) {
+    int a, b; cin >> a >> b;
+    counter[(a+b)%n]++;
+  }
+  ll ans = 1ll*m*(m-1)/2;
+  for (auto [k, v] : counter)
+    ans -= 1ll*v*(v-1)/2;
+  cout << ans;
+
+  return 0;
+}
+```
