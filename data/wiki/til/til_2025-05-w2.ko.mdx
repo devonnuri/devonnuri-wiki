@@ -1,0 +1,54 @@
+---
+title: 2025년 5월 2주차 TIL
+---
+
+# TOC
+
+# 250508
+
+## BOJ 1083 : 소트 (Gold 4)
+
+- 일종의 그리디 문제다.
+- 사전순으로 가장 뒷서는 것을 구하기 위해서는 첫 원소에 가능한 큰 원소를 배치하는 것이 중요하다.
+- 주어진 $s$로 앞에 세울 수 있는 가장 큰 원소, 즉 $\max_{n\leq s} a_n$을 구한다.
+- 이를 $a_n$에 적용한 뒤, 두 번째 원소에 가능한 큰 원소를 배치하도록 하고, 이를 그 뒤 원소에 대해서도 마찬가지로 적용해 나간다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi = vector<int>;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  vi A(n);
+  for (int i=0;i<n;i++)
+    cin >> A[i];
+
+  int s; cin >> s;
+
+  for (int i=0;i<n && s>0;i++) {
+    int mm = -1;
+    int max_j = -1;
+    for (int j=i;j<min(n,i+s+1);j++) {
+      if (mm < A[j]) {
+        mm = A[j];
+        max_j = j;
+      }
+    }
+    int tmp = A[max_j];
+    A.erase(A.begin() + max_j);
+    A.insert(A.begin() + i, tmp);
+
+    s -= max_j-i;
+  }
+
+  for (int i=0;i<n;i++)
+    cout << A[i] << ' ';
+
+  return 0;
+}
+```
