@@ -1,0 +1,61 @@
+---
+title: 2025년 7월 2주차 TIL
+---
+
+자대에서도 열심히 해보려고 한다... 책도 많이 읽고 컴퓨터 공부도 소홀히 하지 않아야지.
+
+# TOC
+
+# 250706
+
+## BOJ 2629 : 양팔저울 (Gold 3)
+
+- 추 하나씩 누적하여 고려하면서 가능한 무게를 DP하려고 했다.
+- 얼핏 가능한 경우의 수가 $O(2^n)$ ($n$은 추의 개수)이라서 시간 초과 나지 않을까 싶었지만, 어차피 겹쳐서 경우의 수가 4만개에서 크게 벗어나지 않을 것 같다는 생각이 들었다.
+- 처음에는 큰 추부터 무게가 작아지는 순으로 고려하여 중간에 발생하는 음수 누적 무게를 피하려고 했지만, 다음과 같은 반례가 떠올랐다.
+    ```
+    4
+    2 3 3 5
+    1
+    1
+    ```
+    
+    - $+5-3-3=-1$에서 음수 무게가 발생하지만, $+5-3-3+2=1$으로 다시 양수로 돌아올 가능성이 있었다.
+    - 따라서, 음수 무게를 단순히 버리면 안되겠다는 생각이 들었다.
+- `bitset`으로 구현한 것에서 15,000 정도의 offset을 줄까도 생각했지만, 헷갈릴까봐 그냥 `set`으로 구현하기로 했다.
+
+```cpp
+#include <bits/stdc++.h>
+using namespace std;
+
+using vi=vector<int>;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  vi W(n);
+  for (int i=0;i<n;i++)
+    cin >> W[i];
+
+  set<int> okay;
+  okay.insert(0);
+  for (int i=0;i<n;i++) {
+    set<int> tmp_set;
+    for (auto it=okay.begin(); it!=okay.end(); it++) {
+      tmp_set.insert(*it + W[i]);
+      tmp_set.insert(*it - W[i]);
+    }
+    okay.insert(tmp_set.begin(), tmp_set.end());
+  }
+  int m; cin >> m;
+  for (int i=0;i<m;i++) {
+    int w; cin >> w;
+    cout << (okay.count(w) > 0 ? 'Y' : 'N') << ' ';
+  }
+}
+```
+
+- 나중에 다른 풀이를 살펴보니 가능한 경우를 $w+a_i$, $|w-a_i|$로 두면 되었다.
+  - 생각해보니 너무 당연하다. 중간에 음수 무게가 나오면 부호를 뒤집어 버리면 되는 것.
