@@ -53,3 +53,49 @@ title: 2025년 7월 3주차 TIL
             - 어떻게 되는지 이해는 했는데, 내부 원리까지 이해하진 못했다. 다시 돌아오도록 하자.
         - 정사각행렬 $A$가 서로 다른 $n$개의 고윳값을 가짐 ⇒ $n$개의 선형독립 고유벡터를 가짐 ⇒ $A$는 대각화가능<sub>diagonalizable</sub>하다.
 - 나머지는 나중에... 기회가 된다면 Gilbert Strang textbook으로 다시 보고 싶다.
+
+# 250713
+## BOJ 1655 : 가운데를 말해요 (Gold 2)
+
+- multiset의 iterator를 이용하여 해결했다.
+
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+const int INF = numeric_limits<int>::max();
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  multiset<int> ms;
+
+  auto med = ms.begin();
+  int off = 0;
+  for (int i=0;i<n;i++) {
+    int x; cin >> x;
+    ms.insert(x);
+    if (i == 0) {
+      med = ms.begin();
+      cout << x << '\n';
+      continue;
+    }
+    if (x >= *med) {
+      off++;
+    } else {
+      off--;
+    }
+    if (off > 1) {
+      off -= 2;
+      med++;
+    } else if (off < 0) {
+      off += 2;
+      med--;
+    }
+    cout << *med << '\n';
+  }
+}
+```
