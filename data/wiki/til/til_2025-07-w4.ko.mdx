@@ -1,0 +1,307 @@
+---
+title: 2025년 7월 4주차 TIL
+---
+
+# TOC
+
+# 250719
+
+## BOJ 14502 : 연구소 (Gold 4)
+
+- `next_permutation`을 이용하여 해결하였다.
+
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+using vi=vector<int>;
+using pi=pair<int,int>;
+
+int n, m;
+int mat[8][8];
+int unsafe=0;
+
+int D[4][2]={{1,0}, {-1,0}, {0,1}, {0,-1}};
+
+void dfs(int i, int j) {
+  if (mat[i][j]!=0) return;
+  mat[i][j]=2;
+  unsafe++;
+
+  for (auto [di, dj] : D) {
+    if (i+di<0 || i+di>=n || j+dj<0 || j+dj>=m) continue;
+    dfs(i+di, j+dj);
+  }
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  cin >> n >> m;
+
+  int map[8][8];
+  vector<pi> virus;
+  vector<pi> empty;
+
+  for (int i=0;i<n;i++) {
+    for (int j=0;j<m;j++) {
+      cin >> map[i][j];
+      if (map[i][j] == 2)
+        virus.emplace_back(i, j);
+      if (map[i][j] == 0)
+        empty.emplace_back(i, j);
+    }
+  }
+
+  vi comb(empty.size(), 1);
+  comb[0]=comb[1]=comb[2]=0;
+
+  int max_safe = 0;
+  do {
+    memcpy(mat, map, sizeof(int) * 64);
+    unsafe = 0;
+    for (int i=0;i<comb.size();i++) {
+      if (comb[i]==0) mat[empty[i].first][empty[i].second] = 1;
+    }
+
+    for (auto [vi, vj] : virus) {
+      mat[vi][vj]=0;
+      dfs(vi, vj);
+    }
+    max_safe = max(max_safe, (int) empty.size() + (int) virus.size() - 3 - unsafe);
+  } while (next_permutation(comb.begin(), comb.end()));
+
+  cout << max_safe;
+}
+```
+
+# 250721
+
+## BOJ 1922 : 네트워크 연결 (Gold 4)
+
+- 크루스칼 알고리즘으로 MST를 만들어 해결했다.
+
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+using ti=array<int,3>;
+using vi=vector<int>;
+
+struct DisjointSet {
+  vi parent;
+
+  DisjointSet(int n) {
+    parent.resize(n);
+    for (int i=0;i<n;i++){
+      parent[i]=i;
+    }
+  }
+
+  int find(int u) {
+    if (parent[u]==u) return u;
+    return parent[u]=find(parent[u]);
+  }
+
+  void merge(int u, int v) {
+    u=find(u), v=find(v);
+    parent[u]=v;
+  }
+};
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, m; cin >> n >> m;
+  vector<ti> edges;
+  for (int i=0;i<m;i++) {
+    int a,b,c;
+    cin >> a >> b >> c;
+    if (a==b) continue;
+    edges.push_back({c,a,b});
+  }
+  sort(edges.begin(), edges.end());
+
+  int res=0;
+  DisjointSet ds(n+1);
+  for (auto [c,a,b] : edges) {
+    if (ds.find(a)!=ds.find(b)) {
+      res += c;
+      ds.merge(a,b);
+    }
+  }
+  cout << res;
+}
+```
+
+## BOJ 2696 : 중앙값 구하기 (Gold 2)
+
+- [[이때:til_2025-07-w3#boj-1655--가운데를-말해요-gold-2]]와는 다르게, PQ 두 개로 해결하는 정해로 풀어보았다.
+
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+using vi=vector<int>;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int T; cin >> T;
+  while (T--) {
+    int n; cin >> n;
+    priority_queue<int, vi, greater<>> pq_g; // x > mid
+    priority_queue<int, vi, less<>> pq_l;    // x <= mid
+    cout << (n+1)/2 << '\n';
+    for (int i=0;i<n;i++) {
+      int x; cin >> x;
+      if (i==0) {
+        pq_l.push(x);
+        cout << x << ' ';
+        continue;
+      }
+      if (x <= pq_l.top())
+        pq_l.push(x);
+      else
+        pq_g.push(x);
+
+      int g_sz = pq_g.size(), l_sz = pq_l.size();
+      if (g_sz - l_sz >= 1) {
+        int top = pq_g.top(); pq_g.pop();
+        pq_l.push(top);
+      } else if (l_sz - g_sz >= 2) {
+        int top = pq_l.top(); pq_l.pop();
+        pq_g.push(top);
+      }
+      if (i%20==0)
+        cout << '\n';
+      if (i%2==0)
+        cout << pq_l.top() << ' ';
+    }
+    cout << '\n';
+  }
+}
+```
+
+## BOJ 4386 : 별자리 만들기 (Gold 3)
+
+- Kruskal로 한 번, Prim으로 한 번 풀었다.
+
+```cpp
+// Solution with Kruskal's Algorithm
+#include <bits/stdc++.h>
+
+using namespace std;
+
+using vi=vector<int>;
+using pi=pair<int,int>;
+
+struct DisjointSet {
+  vi parent, rank;
+  int max_rank=0;
+  DisjointSet(int n) {
+    parent.resize(n);
+    rank.resize(n, 1);
+    for (int i=0;i<n;i++)
+      parent[i]=i;
+  }
+
+  int find(int u) {
+    if (parent[u]==u) return u;
+    return parent[u]=find(parent[u]);
+  }
+
+  void merge(int u, int v) {
+    u=find(u), v=find(v);
+    if (rank[v] > rank[u]) swap(u, v);
+    parent[v] = u;
+    rank[u] += rank[v];
+    max_rank = max(max_rank, rank[u]);
+  }
+};
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  priority_queue<pair<double, pi>, vector<pair<double, pi>>, greater<>> lines;
+  vector<pair<double, double>> points(n);
+
+  for (int i=0;i<n;i++) {
+    double x, y; cin >> x >> y;
+    points[i] = {x, y};
+  }
+
+  for (int i=0;i<n;i++) {
+    for (int j=0;j<n;j++) {
+      if (i==j) continue;
+      lines.push({(points[i].first-points[j].first)*(points[i].first-points[j].first)
+        + (points[i].second-points[j].second)*(points[i].second-points[j].second), {i, j}});
+    }
+  }
+
+  DisjointSet ds(n);
+  double res=0;
+  while (ds.max_rank < n && !lines.empty()) {
+    auto [len, points] = lines.top(); lines.pop();
+    if (ds.find(points.first)!=ds.find(points.second)) {
+      res += sqrt(len);
+      ds.merge(points.first, points.second);
+    }
+  }
+  cout << res;
+}
+```
+
+```cpp
+// Solution with Prim's Algorithm
+#include <bits/stdc++.h>
+
+using namespace std;
+
+using vi=vector<int>;
+using pi=pair<int,int>;
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  vector<pair<double, double>> points(n);
+
+  for (int i=0;i<n;i++) {
+    double x, y; cin >> x >> y;
+    points[i] = {x, y};
+  }
+
+  priority_queue<pair<double, int>, vector<pair<double, int>>, greater<>> pq;
+  bitset<100> visited;
+  pq.emplace(0, 0);
+  double res=0;
+
+  while (!pq.empty()) {
+    auto [w, u] = pq.top(); pq.pop();
+
+    if (visited[u]) continue;
+    visited[u] = true;
+    res += w;
+
+    for (int v=0;v<n;v++) {
+      if (u == v) continue;
+      if (visited[v]) continue;
+
+      pq.emplace(sqrt((points[u].first-points[v].first)*(points[u].first-points[v].first)
+        +(points[u].second-points[v].second)*(points[u].second-points[v].second)), v);
+    }
+  }
+
+  cout << res;
+}
+```

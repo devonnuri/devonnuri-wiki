@@ -99,3 +99,82 @@ int main() {
   }
 }
 ```
+
+## BOJ 16234 : 인구 이동 (Gold 4)
+
+- Disjoint set으로 해결했다.
+
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+using vi=vector<int>;
+
+struct DisjointSet {
+  vi parent, rank, sum;
+  int max_rank=1;
+
+  DisjointSet(int n, const vi &mat) {
+    parent.resize(n);
+    rank.resize(n, 1);
+    sum = mat;
+    for (int i=0;i<n;i++)
+      parent[i]=i;
+  }
+
+  int find(int x) {
+    if (parent[x]==x) return x;
+    return parent[x]=find(parent[x]);
+  }
+
+  void merge(int x, int y) {
+    x=find(x),y=find(y);
+    if (x==y) return;
+    if (rank[x] > rank[y]) swap(x, y);
+    parent[x]=y;
+    rank[y]+=rank[x];
+    sum[y]+=sum[x];
+    max_rank=max(max_rank, rank[y]);
+  }
+};
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, l, r;
+  cin >> n >> l >> r;
+
+  vi mat(n*n);
+  for (int i=0;i<n;i++)
+    for (int j=0;j<n;j++)
+      cin >> mat[i*n+j];
+
+  int res=0;
+  for (;res<=2000;res++) {
+    DisjointSet ds(n*n, mat);
+    for (int i=0;i<n;i++){
+      for (int j=0;j<n;j++) {
+        int cur = mat[i*n+j];
+        if (i > 0 && l <= abs(cur - mat[(i-1)*n+j]) && abs(cur - mat[(i-1)*n+j]) <= r)
+          ds.merge(i*n+j, (i-1)*n+j);
+        if (j > 0 && l <= abs(cur - mat[i*n+j-1]) && abs(cur - mat[i*n+j-1]) <= r)
+          ds.merge(i*n+j, i*n+j-1);
+      }
+    }
+
+    if (ds.max_rank == 1) break;
+
+    for (int i=0;i<n;i++) {
+      for (int j=0;j<n;j++) {
+        int par = ds.find(i*n+j);
+        int cnt = ds.rank[par];
+        int sum = ds.sum[par];
+        mat[i*n+j] = sum / cnt;
+      }
+    }
+  }
+  cout << res;
+}
+```

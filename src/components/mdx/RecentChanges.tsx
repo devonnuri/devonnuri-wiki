@@ -25,7 +25,7 @@ export default async function RecentChanges() {
             </div>
             <div className="ml-auto">
               {article.updatedAt === null
-                ? '저장 전'
+                ? t('unsaved')
                 : dayjs(article.updatedAt).fromNow()}
             </div>
           </div>
