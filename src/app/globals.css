@@ -239,6 +239,10 @@ mjx-container svg {
 
 .content .theorem .theorem-body {
   border: 1px solid #0092c8;
+  padding: 0.25rem 0.75rem;
+}
+
+.content .theorem .theorem-body:has(.theorem-title) {
   padding: 1.25rem 0.75rem 0.75rem 0.75rem;
 }
 
@@ -310,4 +314,9 @@ mjx-container svg {
   border: 0;
   border-top: 1px solid #e5e7eb;
   margin: 1rem 0;
+}
+
+.content .graphviz-diagram {
+  display: flex;
+  justify-content: center;
 }

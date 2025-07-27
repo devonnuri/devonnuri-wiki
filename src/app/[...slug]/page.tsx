@@ -1,4 +1,5 @@
 import { RunOptions, compile, run } from '@mdx-js/mdx';
+import { Graphviz } from '@hpcc-js/wasm';
 import dayjs from 'dayjs';
 import { readFile } from 'fs/promises';
 import 'highlight.js/styles/github.css';
@@ -7,6 +8,7 @@ import { redirect } from 'next/navigation';
 import path from 'path';
 import { Fragment } from 'react';
 import * as runtime from 'react/jsx-runtime';
+import rehypeGraphviz from 'rehype-graphviz';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeMathjax from 'rehype-mathjax/svg';
 import rehypeSlug from 'rehype-slug';
@@ -116,6 +118,12 @@ export default async function WikiPage({ params }: Props) {
           {
             svg: { scale: 1 },
           },
+        ],
+        [
+          rehypeGraphviz,
+          {
+            graphviz: await Graphviz.load(),
+          }
         ],
         rehypeHighlight,
       ],
