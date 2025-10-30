@@ -1,5 +1,5 @@
-import { RunOptions, compile, run } from '@mdx-js/mdx';
 import { Graphviz } from '@hpcc-js/wasm';
+import { RunOptions, compile, run } from '@mdx-js/mdx';
 import dayjs from 'dayjs';
 import { readFile } from 'fs/promises';
 import 'highlight.js/styles/github.css';
@@ -123,7 +123,7 @@ export default async function WikiPage({ params }: Props) {
           rehypeGraphviz,
           {
             graphviz: await Graphviz.load(),
-          }
+          },
         ],
         rehypeHighlight,
       ],
