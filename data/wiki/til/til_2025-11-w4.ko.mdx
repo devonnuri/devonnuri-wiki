@@ -1,0 +1,144 @@
+---
+title: 2025년 11월 4주차 TIL
+---
+
+# TOC
+
+# 251128
+
+## BOJ 2533 : 사회망 서비스(SNS) (Gold 3)
+
+- 자식 노드가 있는 부모 노드를 떠올리자. 이때 자식 노드는 리프 노드라고 가정하자.
+    - 여기서 얼리 어답터는 부모가 되는 것이 최적이다.
+    - 자식 노드가 1명 뿐이더라도 부모가 얼리 어답터가 되는 것이 해당 부모의 부모 노드가 얼리 어답터가 되지 않게 할 수 있으므로 더 낫다.
+- 따라서, 이 greedy한 알고리즘을 계속 따라가면 $O(n)$에 풀 수 있다.
+
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+using vi=vector<int>;
+using pi=pair<int,int>;
+
+vector<vi> G;
+
+// returns (cover count in the subtree of u, is u cover)
+pair<int,bool> dfs(int u, int p) {
+  int u_cnt=0;
+  bool u_cover=false;
+  for (auto v : G[u]) {
+    if (v == p) continue;
+    auto [v_cnt, v_cover] = dfs(v, u);
+    u_cnt += v_cnt;
+    u_cover = u_cover || !v_cover;
+  }
+  return {u_cnt+u_cover, u_cover};
+}
+
+int main() {
+  ios_base::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n; cin >> n;
+  G.resize(n+1);
+
+  for (int i=0;i<n-1;i++) {
+    int a,b; cin >> a >> b;
+    G[a].push_back(b);
+    G[b].push_back(a);
+  }
+
+  auto [cnt, cover] = dfs(1, 0);
+  cout << cnt;
+}
+```
+
+# 251129
+
+## BOJ 9345 : 디지털 비디오 디스크(DVDs) (Platinum 3)
+
+- bitset + 세그먼트 트리로 풀었다.
+- 세그먼트 트리에는 bitset의 해싱 값을 저장하면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+using ll = long long;
+
+const int MAXN = 100001;
+ll seg[4*MAXN];
+const ll p = 1e9 + 7;
+
+ll powmod(int n, int e) {
+  ll base = n % p;
+  ll res = 1;
+  while (e > 0) {
+    if (e & 1) res = (res * base) % p;
+    e >>= 1;
+    base = (base * base) % p;
+  }
+  return res;
+}
+
+void build(int node, int start, int end) {
+  if (start == end) {
+    seg[node] = powmod(2, start); // 2^item
+    return;
+  }
+  int mid = (start+end)/2;
+  build(node*2, start, mid);
+  build(node*2+1, mid+1, end);
+  seg[node] = (seg[node*2] + seg[node*2+1]) % p;
+}
+
+void update(int node, int start, int end, int idx, int val) {
+  if (start == end) {
+    seg[node] = val;
+    return;
+  }
+  int mid = (start+end)/2;
+  if (idx <= mid) update(node*2, start, mid, idx, val);
+  else update(node*2+1, mid+1, end, idx, val);
+  seg[node] = (seg[node*2] + seg[node*2+1]) % p;
+}
+
+ll query(int node, int start, int end, int l, int r) {
+  if (r < start || end < l) return 0;
+  if (l <= start && end <= r) return seg[node];
+  int mid = (start+end)/2;
+  return (query(node*2, start, mid, l, r) + query(node*2+1, mid+1, end, l, r)) % p;
+}
+
+int main() {
+  ios::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int T; cin >> T;
+  while (T--) {
+    int N, Q; cin >> N >> Q;
+    fill(seg, seg+4*MAXN, 0);
+    build(1, 1, N);
+    while (Q--) {
+      int q, a, b; cin >> q >> a >> b;
+      a++; b++; // 0-indexed -> 1-indexed
+      if (q == 0) {
+        ll qa = query(1, 1, N, a, a);
+        ll qb = query(1, 1, N, b, b);
+        update(1, 1, N, a, qb);
+        update(1, 1, N, b, qa);
+      } else {
+        // bits from a-th to b-th are on = 2^a(2^(b-a+1)-1)
+        ll expected = (powmod(2, a) * (powmod(2, b-a+1) - 1)) % p;
+        cout << (query(1, 1, N, a, b) == expected ? "YES" : "NO") << '\n';
+      }
+    }
+  }
+
+  return 0;
+}
+```
+
+- 아이템이 distinct하니까 "구간의 최솟값, 최댓값이 각각 쿼리의 $a$, $b$이다." ⇔ "$[a,\,b]$의 값이 구간에 빠짐없이 있다."임을 알 수 있고, 이를 통해 min, max에 대하여 세그트리를 각각 구성하여 풀어도 된다.
