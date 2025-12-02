@@ -1,0 +1,104 @@
+---
+title: 2025년 12월 1주차 TIL
+---
+
+# TOC
+
+# 251202
+
+## BOJ 2342 : Dance Dance Revolution (Gold 3)
+
+- DP 문제인데 애먹어서 못 풀다가 이제 풀었다.
+- $dp_i[l][r]$을 $i$번째 위치를 밟을 때, 그리고 마지막 두 발의 위치가 $(l,r)$일 때의 최소의 총 힘이라고 정의하자. 그러면 다음과 같은 transition rule을 생각할 수 있다.
+
+    $$
+    \begin{align*}
+    dp_i[x][r]
+    &=
+    \min \Bigl\{
+    dp_{i-1}[l][r] + \operatorname{cost}(l, x)
+    \;\Big|\;
+    (l, r) \in S,\; r \neq x
+    \Bigr\} \\
+    dp_i[l][x]
+    &=
+    \min \Bigl\{
+    dp_{i-1}[l][r] + \operatorname{cost}(r, x)
+    \;\Big|\;
+    (l, r) \in S,\; l \neq x
+    \Bigr\}
+    \end{align*}
+    $$
+
+    - 여기서 $S$는 허용 상태 집합이며 다음과 같이 정의된다.
+
+        $$
+        S = \{(l, r) \mid l, r \in \{0,1,2,3,4\},\; (l = r \Rightarrow l = 0)\}
+        $$
+
+- 각 $dp_i$ 상태는 직전 $dp_{i-1}$에만 영향을 받으므로 모두 저장할 필요 없다.
+
+```py
+from math import inf
+
+l = [int(x) for x in input().split()][:-1]
+dp = [[inf] * 5 for i in range(5)]
+dp[0][0] = 0
+
+def cost(x, y):
+  if x == 0:
+    return 2
+  if x == y:
+    return 1
+  return 3 + ((x-y)%2 == 0)
+
+for x in l:
+  tmp = [[inf] * 5 for i in range(5)]
+  for j in range(5):
+    for k in range(5):
+      if j == k and j != 0:
+        continue
+      tmp[x][j] = min(tmp[x][j], dp[k][j] + cost(k, x))
+      tmp[j][x] = min(tmp[j][x], dp[j][k] + cost(k, x))
+  dp=tmp
+
+print(min([min(x) for x in dp]))
+```
+
+## BOJ 2170 : 선 긋기 (Gold 5)
+
+- 스위핑 기초다. 이벤트 리스트가 포인트이다.
+
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+using vi = vector<int>;
+
+int main() {
+  ios::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  vector<pi> events;
+  int n; cin >> n;
+
+  for (int i=0;i<n;i++) {
+    int l, r; cin >> l >> r;
+    events.emplace_back(l, 1);
+    events.emplace_back(r, -1);
+  }
+
+  sort(events.begin(), events.end());
+
+  int cur = 0, start = 0, res = 0;
+  for (auto [p, e] : events) {
+    if (e == 1 && cur == 0) start = p;
+    cur += e;
+    if (e == -1 && cur == 0) res += p - start;
+  }
+  cout << res;
+
+  return 0;
+}
+```
