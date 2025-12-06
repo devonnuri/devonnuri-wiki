@@ -102,3 +102,127 @@ int main() {
   return 0;
 }
 ```
+
+## BOJ 20412 : 추첨상 사수 대작전! (Hard) (Gold 2)
+
+$$
+\begin{align*}
+(a\times S + c) \equiv X_1 \pmod{m} \\
+(a\times X_1 + c) \equiv X_2 \pmod{m}
+\end{align*}
+$$
+
+이 두 식을 빼면,
+
+$$
+a\times(S - X_1) \equiv X_1 - X_2 \pmod{m}
+$$
+
+1. $S = X_1$일때,
+
+    $X_1 = X_2$이므로, 해 $(a,c)$는 무수히 많다. $(1, 0)$으로 잡을 수 있다.
+
+2. $S \neq X_1$일때,
+
+    페르마의 소정리에 의해,
+
+    $$
+    \begin{align*}
+    a &\equiv (X_1 - X_2)\times(S - X_1)^{-1} \pmod{m} \\
+      &\equiv (X_1 - X_2)\times(S - X_1)^{m-2} \pmod{m}
+    \end{align*}
+    $$
+
+    $c$는 첫 식에 대입해서 구하면 된다.
+
+```py
+m, s, x1, x2 = map(int, input().split())
+if s==x1:
+  print(1, 0)
+else:
+  a = (x1-x2)*pow((s-x1)%m,-1,m)%m
+  c = (x1-a*s)%m
+  print(a,c)
+```
+
+# 241204
+
+## BOJ 13975 : 파일 합치기 3 (Gold 4)
+
+- 허프만 코딩 문제다.
+
+- 허프만 코딩 증명은 다음과 같이 하면 된다. 이거 하면서 교환 논법 감 잡은듯.
+
+    - 다음을 증명한다.
+
+        > 주어진 가중치 $w_1$, $\cdots$, $w_n$에 대해
+        > 항상 가장 작은 두 개를 합쳐 가중치 $w_i+w_j$인 새 노드를 만들고,
+        > 이걸 반복해서 만든 이진트리가 전체 가중 경로 길이 $\sum w_i\cdot \text{depth}(i)$를 최소로 한다.
+    
+    - 이를 위해 다음 두 Lemma를 증명한다.
+        1. 가장 작은 두 가중치는 최적 트리에서 형제(같은 부모)로 둘 수 있다.
+            - 얘는 교환 논법으로 증명할 수 있는데, 최적 트리의 가장 깊은 리프가 가중치가 가장 작지 않을 경우, 그렇게 바꾼 뒤 비용 변화가 얼마가 될지 구하면 된다.
+        2. 두 최소 가중치를 하나로 합치면 부분문제도 최적이다.
+            - 이 부분은 직관적으로 알 수 있다.
+    
+    - Lemma를 모두 증명한 뒤엔 수학적 귀납법으로 마무리하면 된다.
+
+```py
+from heapq import heapify, heappop, heappush
+
+t=int(input())
+for _ in range(t):
+  n=int(input())
+  q=[int(x) for x in input().split()]
+  heapify(q)
+  res=0
+  while len(q)>1:
+    a,b=heappop(q),heappop(q)
+    heappush(q, a+b)
+    res+=a+b
+  print(res)
+```
+
+# 251205
+
+## BOJ 11401 : 이항 계수 3 (Gold 1)
+
+- 단계별로 풀어보기에서 힌트를 줘서 풀었다.
+
+- 이항계수를 구하면 다음과 같다. 역원은 페르마의 소정리로 구하면 된다.
+
+    $$
+    \begin{align*}
+    \binom{n}{k} &\equiv \left(\prod_{i=n-k+1}^{n} i\right) \cdot (k!)^{-1} \pmod{p} \\
+                 &\equiv \left(\prod_{i=n-k+1}^{n} i\right) \cdot (k!)^{p-2} \pmod{p}
+    \end{align*}
+    $$
+
+```py
+n,k=map(int,input().split())
+res=1
+p=int(1e9)+7
+for i in range(n-k+1,n+1):
+  res=(res*i)%p
+k_fac=1
+for i in range(1,k+1):
+  k_fac=(k_fac*i)%p
+res=(res*pow(k_fac,p-2,p))%p
+print(res)
+```
+
+## BOJ 1069 : 집으로 (Gold 3)
+
+- Exhaustive하게 케이스 분류를 하자면, $d>l$ ($l=\sqrt{x^2+y^2}$)일 때, $d\leq l$일 때를 나누고, 그 안에서 0번 점프, 1번 점프, ...를 나누어서 최소 시간 케이스를 고르면 된다.
+- $d>l$일 때에는 0번 점프, 1번 점프, 2번 점프 중 하나가 최적이고, 그 이상 점프하면 2번 점프보다 항상 비효율적이다.
+- $d\leq l$일 때에는 0번 점프, $n$번 점프, $n+1$ 점프 중 하나가 최적이다. ($n=\left\lfloor l/d \right\rfloor$)
+
+```py
+x,y,d,t=map(int,input().split())
+l=(x*x+y*y)**.5
+if d>l:
+  print(min(t+d-l,l,2*t))
+else:
+  n=int(l/d)
+  print(min(n*t+l-n*d,(n+1)*t,l))
+```
