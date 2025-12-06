@@ -12,11 +12,11 @@ export default async function Subpages({ entryId }: SubpagesProps) {
   const subpages = await getSubpages(entryId, lang);
 
   subpages.sort((a, b) => {
-    const titleA = a.title.toLowerCase();
-    const titleB = b.title.toLowerCase();
+    const entryIdA = a.entryId.toLowerCase();
+    const entryIdB = b.entryId.toLowerCase();
 
-    if (titleA < titleB) return -1;
-    if (titleA > titleB) return 1;
+    if (entryIdA < entryIdB) return -1;
+    if (entryIdA > entryIdB) return 1;
     return 0;
   });
 
