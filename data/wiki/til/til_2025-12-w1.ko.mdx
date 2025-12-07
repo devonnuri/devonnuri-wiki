@@ -363,20 +363,194 @@ int main() {
   
   DisjointSet ds(n);
   int m = 1;
-  for (int i=0;i<n;i++) {
-    for (int j=i+1;j<n;j++) {
+  for (int i=0;i<n;i++)
+    for (int j=i+1;j<n;j++)
       if (intersect(coord[i][0], coord[i][1], coord[i][2], coord[i][3], coord[j][0], coord[j][1], coord[j][2], coord[j][3]))
         m = max(m, ds.merge(i, j));
-    }
-  }
 
   set<int> si;
-  for (int i=0;i<n;i++) {
+  for (int i=0;i<n;i++)
     si.insert(ds.find(i));
-  }
 
   cout << si.size() << '\n' << m;
 
   return 0;
 }
 ```
+
+# 251207
+
+## BOJ 4195 : 친구 네트워크 (Gold 2)
+
+- Map + DSU로 풀면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+using vi = vector<int>;
+
+struct DisjointSet {
+  vi parent, rank;
+
+  DisjointSet(int n) {
+    parent.resize(n);
+    rank.resize(n,1);
+    for (int i=0;i<n;i++)
+      parent[i]=i;
+  }
+  
+  int find(int u) {
+    if (u==parent[u]) return u;
+    return parent[u]=find(parent[u]);
+  }
+
+  int merge(int u, int v) {
+    u=find(u), v=find(v);
+    if (u == v) return rank[u];
+    if (rank[u]>rank[v]) swap(u,v);
+    parent[u] = v;
+    rank[v] += rank[u];
+    return rank[v];
+  }
+};
+
+int main() {
+  ios::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int T; cin >> T;
+  while (T--) {
+    DisjointSet ds(200000);
+    map<string,int> ms;
+    int f; cin >> f;
+    for (int i=0;i<f;i++) {
+      string a, b;
+      cin >> a >> b;
+      if (!ms.count(a)) ms[a] = ms.size();
+      if (!ms.count(b)) ms[b] = ms.size();
+      ds.merge(ms[a], ms[b]);
+      cout << ds.rank[ds.find(ms[a])] << '\n';
+    }
+  }
+
+  return 0;
+}
+```
+
+## BOJ 14890 : 경사로 (Gold 3)
+
+- 구현만 열심히 해주면 된다.
+
+```cpp
+#include <bits/stdc++.h>
+
+using namespace std;
+
+using vi = vector<int>;
+using pi = pair<int,int>;
+using ll = long long;
+
+int mat[100][100];
+
+int main() {
+  ios::sync_with_stdio(false);
+  cin.tie(nullptr);
+
+  int n, l; cin >> n >> l;
+  for (int i=0;i<n;i++)
+    for (int j=0;j<n;j++)
+      cin >> mat[i][j];
+  
+  int ans = 0;
+  for (int i=0;i<n;i++) {
+    int prev = mat[i][0];
+    bool okay = true;
+    bool ramp[100] = {false, };
+    for (int j=1;j<n;j++) {
+      if (mat[i][j] > prev) {
+        if (mat[i][j] > prev + 1) {
+          okay = false; break;
+        }
+        for (int k=1;k<=l;k++) {
+          if (j-k<0 || ramp[j-k] || mat[i][j-k] != prev) {
+            okay = false; break;
+          }
+          ramp[j-k] = true;
+        }
+        if (!okay) break;
+      } else if (mat[i][j] < prev) {
+        if (mat[i][j] < prev - 1) {
+          okay = false; break;
+        }
+        for (int k=0;k<l;k++) {
+          if (j+k>n-1 || ramp[j+k] || mat[i][j+k] != prev-1) {
+            okay = false; break;
+          }
+          ramp[j+k] = true;
+        }
+        if (!okay) break;
+      }
+      prev = mat[i][j];
+    }
+    if (okay) ans++;
+  }
+
+  for (int i=0;i<n;i++) {
+    int prev = mat[0][i];
+    bool okay = true;
+    bool ramp[100] = {false, };
+    for (int j=1;j<n;j++) {
+      if (mat[j][i] > prev) {
+        if (mat[j][i] > prev + 1) {
+          okay = false; break;
+        }
+        for (int k=1;k<=l;k++) {
+          if (j-k<0 || ramp[j-k] || mat[j-k][i] != prev) {
+            okay = false; break;
+          }
+          ramp[j-k] = true;
+        }
+        if (!okay) break;
+      } else if (mat[j][i] < prev) {
+        if (mat[j][i] < prev - 1) {
+          okay = false; break;
+        }
+        for (int k=0;k<l;k++) {
+          if (j+k>n-1 || ramp[j+k] || mat[j+k][i] != prev-1) {
+            okay = false; break;
+          }
+          ramp[j+k] = true;
+        }
+        if (!okay) break;
+      }
+      prev = mat[j][i];
+    }
+    if (okay) ans++;
+  }
+
+  cout << ans;
+
+  return 0;
+}
+```
+
+## BOJ 13977 : 이항 계수와 쿼리 (Platinum 5)
+
+- 위의 '이항 계수 3' 문제와 거의 동일하지만 팩토리얼만 전처리 해주면 된다.
+- 채점하는 데에 10분 넘게 걸린듯...
+
+```py
+MOD = 1_000_000_007
+fac = [0]*4_000_001
+fac[0] = 1
+for i in range(1, 4_000_001):
+  fac[i] = fac[i-1] * i % MOD
+
+for _ in range(int(input())):
+  n, k = map(int, input().split())
+  print(fac[n]*pow(fac[k] * fac[n-k],MOD-2,MOD)%MOD)
+```
+
+- 이 문제로 인해 플래티넘 4를 달성하게 되었다. 한 달에 티어 하나씩 오르게 하고 싶다.
